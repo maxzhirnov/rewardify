@@ -1,52 +1,30 @@
 package handlers
 
 import (
-	"net/http"
+	"time"
 
 	"github.com/maxzhirnov/rewardify/internal/logger"
 )
 
+const (
+	cookieExpirationTime = 72 * time.Hour
+)
+
+type app interface {
+	Register(username, password string) error
+	Authenticate(username, password string) (string, error)
+	UploadOrder(orderNumber, userUUID string) error
+	Ping() error
+}
+
 type Handlers struct {
+	app    app
 	logger *logger.Logger
 }
 
-func NewHandlers(l *logger.Logger) *Handlers {
+func NewHandlers(app app, l *logger.Logger) *Handlers {
 	return &Handlers{
+		app:    app,
 		logger: l,
 	}
-}
-
-func (h Handlers) HandlePing(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte("pong"))
-	if err != nil {
-		return
-	}
-}
-
-func (h Handlers) HandleRegister(writer http.ResponseWriter, request *http.Request) {
-
-}
-
-func (h Handlers) HandleLogin(writer http.ResponseWriter, request *http.Request) {
-
-}
-
-func (h Handlers) HandleOrdersUpload(writer http.ResponseWriter, request *http.Request) {
-
-}
-
-func (h Handlers) HandleOrdersList(writer http.ResponseWriter, request *http.Request) {
-
-}
-
-func (h Handlers) HandleGetBalance(writer http.ResponseWriter, request *http.Request) {
-
-}
-
-func (h Handlers) HandleWithdraw(writer http.ResponseWriter, request *http.Request) {
-
-}
-
-func (h Handlers) HandleListAllWithdraws(writer http.ResponseWriter, request *http.Request) {
-
 }
