@@ -22,7 +22,7 @@ type store interface {
 	GetUsersOrders(ctx context.Context, userUUID string) ([]models.Order, error)
 	GetUsersBalance(ctx context.Context, userUUID string) (models.UsersBalance, error)
 	GetAllUnprocessedOrders(ctx context.Context) ([]models.Order, error)
-	UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order, newStatus string)
+	UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order, newStatus string) error
 }
 
 type Repo struct {
