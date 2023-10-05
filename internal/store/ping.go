@@ -1,5 +1,9 @@
 package store
 
-func (p *Postgres) Ping() error {
-	return p.DB.Ping()
+import (
+	"context"
+)
+
+func (p *Postgres) Ping(ctx context.Context) error {
+	return p.DB.PingContext(ctx)
 }

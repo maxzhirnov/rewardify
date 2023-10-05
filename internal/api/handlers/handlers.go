@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"context"
+	"encoding/json"
+	"net/http"
 	"time"
 
 	"github.com/maxzhirnov/rewardify/internal/logger"
+	"github.com/maxzhirnov/rewardify/internal/models"
 )
 
 const (
@@ -11,10 +15,12 @@ const (
 )
 
 type app interface {
-	Register(username, password string) error
-	Authenticate(username, password string) (string, error)
-	UploadOrder(orderNumber, userUUID string) error
-	Ping() error
+	Register(ctx context.Context, username, password string) error
+	Authenticate(ctx context.Context, username, password string) (string, error)
+	UploadOrder(ctx context.Context, orderNumber, userUUID string) error
+	GetAllOrders(ctx context.Context, userUUID string) ([]models.Order, error)
+	GetBalance(ctx context.Context, userUUID string) (models.UsersBalance, error)
+	Ping(ctx context.Context) error
 }
 
 type Handlers struct {
@@ -26,5 +32,14 @@ func NewHandlers(app app, l *logger.Logger) *Handlers {
 	return &Handlers{
 		app:    app,
 		logger: l,
+	}
+}
+
+func JSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
 	}
 }

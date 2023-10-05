@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -17,49 +18,55 @@ var (
 )
 
 type repo interface {
-	CheckAndInsertOrder(order models.Order) (bool, string, error)
-	Bootstrap() error
-	Ping() error
+	InsertNewOrder(ctx context.Context, order models.Order) (bool, string, error)
+	GetUsersOrders(ctx context.Context, userUUID string) ([]models.Order, error)
+	GetUsersBalance(ctx context.Context, userUUID string) (models.UsersBalance, error)
+	Bootstrap(ctx context.Context) error
+	Ping(ctx context.Context) error
 }
 
 type authService interface {
-	Register(username, password string) error
-	Authenticate(username, password string) (string, error)
+	Register(ctx context.Context, username, password string) error
+	Authenticate(ctx context.Context, username, password string) (string, error)
+}
+
+type accrualService interface {
 }
 
 type App struct {
-	authService authService
-	repo        repo
-	logger      *logger.Logger
+	authService    authService
+	accrualService accrualService
+	repo           repo
+	logger         *logger.Logger
 }
 
-func NewApp(a authService, r repo, l *logger.Logger) *App {
+func NewApp(auth authService, accrual accrualService, repo repo, l *logger.Logger) *App {
 	return &App{
-		authService: a,
-		repo:        r,
-		logger:      l,
+		authService:    auth,
+		accrualService: accrual,
+		repo:           repo,
+		logger:         l,
 	}
 }
 
-func (app *App) Register(username, password string) error {
-	err := app.authService.Register(username, password)
+func (app *App) Register(ctx context.Context, username, password string) error {
+	err := app.authService.Register(ctx, username, password)
 	if errors.Is(err, auth.ErrUserAlreadyExist) {
 		return ErrUserAlreadyExist
 	}
 	return err
 }
 
-func (app *App) Authenticate(username, password string) (string, error) {
-	return app.authService.Authenticate(username, password)
+func (app *App) Authenticate(ctx context.Context, username, password string) (string, error) {
+	return app.authService.Authenticate(ctx, username, password)
 }
 
-func (app *App) UploadOrder(orderNumber, userUUID string) error {
+func (app *App) UploadOrder(ctx context.Context, orderNumber, userUUID string) error {
 	order := models.Order{
 		OrderNumber:        orderNumber,
 		UserUUID:           userUUID,
-		BonusAccrualStatus: models.BonusAccrualStatusCreated,
+		BonusAccrualStatus: models.BonusAccrualStatusNew,
 		BonusesAccrued:     0,
-		BonusesSpent:       0,
 		CreatedAt:          time.Now(),
 	}
 
@@ -67,7 +74,7 @@ func (app *App) UploadOrder(orderNumber, userUUID string) error {
 		return ErrInvalidOrderNumber
 	}
 
-	isInserted, insertedUserUUID, err := app.repo.CheckAndInsertOrder(order)
+	isInserted, insertedUserUUID, err := app.repo.InsertNewOrder(ctx, order)
 	if !isInserted {
 		if insertedUserUUID == userUUID {
 			return ErrAlreadyCreatedByUser
@@ -82,8 +89,16 @@ func (app *App) UploadOrder(orderNumber, userUUID string) error {
 	return nil
 }
 
-func (app *App) Ping() error {
-	return app.repo.Ping()
+func (app *App) GetAllOrders(ctx context.Context, userUUID string) ([]models.Order, error) {
+	return app.repo.GetUsersOrders(ctx, userUUID)
+}
+
+func (app *App) GetBalance(ctx context.Context, userUUID string) (models.UsersBalance, error) {
+	return app.repo.GetUsersBalance(ctx, userUUID)
+}
+
+func (app *App) Ping(ctx context.Context) error {
+	return app.repo.Ping(ctx)
 }
 
 func (app *App) Shutdown() {

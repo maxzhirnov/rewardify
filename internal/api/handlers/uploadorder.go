@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
+	"time"
 
 	app2 "github.com/maxzhirnov/rewardify/internal/app"
 )
@@ -16,6 +18,9 @@ type UploadOrderResponseData struct {
 }
 
 func (h Handlers) HandleUploadOrder(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	response := new(UploadOrderResponseData)
 	userUUID := r.Context().Value("uuid").(string)
 
@@ -40,7 +45,7 @@ func (h Handlers) HandleUploadOrder(w http.ResponseWriter, r *http.Request) {
 
 	orderNumber := string(body)
 
-	err = h.app.UploadOrder(orderNumber, userUUID)
+	err = h.app.UploadOrder(ctx, orderNumber, userUUID)
 	if errors.Is(err, app2.ErrInvalidOrderNumber) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		response.Message = err.Error()

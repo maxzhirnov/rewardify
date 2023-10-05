@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"errors"
 
 	"github.com/dgrijalva/jwt-go"
@@ -18,8 +19,8 @@ var (
 )
 
 type repo interface {
-	GetUserByUsername(username string) (models.User, error)
-	CreateUser(user models.User) error
+	GetUserByUsername(ctx context.Context, username string) (models.User, error)
+	InsertNewUser(ctx context.Context, user models.User) error
 }
 
 type AuthService struct {
@@ -34,7 +35,7 @@ func NewAuthService(r repo, secretKey string) *AuthService {
 	}
 }
 
-func (a *AuthService) Register(username, password string) error {
+func (a *AuthService) Register(ctx context.Context, username, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -46,15 +47,15 @@ func (a *AuthService) Register(username, password string) error {
 		Password: string(hashedPassword),
 	}
 
-	err = a.repo.CreateUser(user)
+	err = a.repo.InsertNewUser(ctx, user)
 	if errors.Is(err, r.ErrUserAlreadyExist) {
 		return ErrUserAlreadyExist
 	}
 	return err
 }
 
-func (a *AuthService) Authenticate(username, password string) (string, error) {
-	user, err := a.repo.GetUserByUsername(username)
+func (a *AuthService) Authenticate(ctx context.Context, username, password string) (string, error) {
+	user, err := a.repo.GetUserByUsername(ctx, username)
 	if err != nil {
 		return "", ErrInvalidCredentials
 	}

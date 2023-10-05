@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/maxzhirnov/rewardify/internal/accrual"
 	"github.com/maxzhirnov/rewardify/internal/api"
 	"github.com/maxzhirnov/rewardify/internal/api/handlers"
 	"github.com/maxzhirnov/rewardify/internal/api/middlewares"
@@ -19,7 +22,7 @@ import (
 
 func main() {
 	// Logging
-	logger, err := l.NewLogger(l.DebugLevel)
+	logger, err := l.NewLogger(l.DebugLevel, true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,13 +39,17 @@ func main() {
 	}
 
 	repository := repo.NewRepo(storage, logger)
-	err = repository.Bootstrap()
+	err = repository.Bootstrap(context.TODO())
 	if err != nil {
 		logger.Log.Fatal(err)
 	}
 
 	authService := auth.NewAuthService(repository, cfg.AuthSecretKey())
-	appInstance := app.NewApp(authService, repository, logger)
+
+	httpClient := &http.Client{}
+	accrualAPIWrapper := accrual.NewAPIWrapper(cfg.AccrualSystemAddress(), httpClient, logger)
+	accrualService := accrual.NewService(repository, accrualAPIWrapper, logger)
+	appInstance := app.NewApp(authService, accrualService, repository, logger)
 
 	// Предусматриваем Gracefully shutdown
 	go waitForShutdown(appInstance)
@@ -53,7 +60,7 @@ func main() {
 	server := api.NewServer(hd, mw, logger)
 
 	// Запускаем сервер
-	err = server.Start(":8080")
+	err = server.Start(cfg.RunAddress())
 	if err != nil {
 		return
 	}

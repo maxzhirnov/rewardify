@@ -53,7 +53,7 @@ func (api *Server) Start(addr string) error {
 			r.Use(api.middlewares.AuthMiddleware)
 			r.Get("/ping", api.handlers.HandlePing)
 			r.Post("/orders", api.handlers.HandleUploadOrder)
-			r.Get("/orders", api.handlers.HandleOrdersList)
+			r.Get("/orders", api.handlers.HandleGetOrders)
 			r.Get("/balance", api.handlers.HandleGetBalance)
 			r.Post("/balance/withdraw", api.handlers.HandleWithdraw)
 			r.Get("/withdrawals", api.handlers.HandleListAllWithdrawals)

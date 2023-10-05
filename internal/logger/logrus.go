@@ -20,37 +20,6 @@ const (
 	TraceLevel = logrus.TraceLevel
 )
 
-type Logger struct {
-	Log     *logrus.Logger
-	logFile *os.File
-}
-
-func NewLogger(level logrus.Level) (*Logger, error) {
-	logger := logrus.New()
-	logger.Level = level
-	logger.SetReportCaller(true)
-	logger.SetFormatter(&MyFormatter{})
-
-	logFile, err := os.OpenFile("logs.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, err
-	}
-
-	mw := io.MultiWriter(os.Stdout, logFile)
-
-	logger.SetOutput(mw)
-
-	return &Logger{
-		Log:     logger,
-		logFile: logFile,
-	}, nil
-}
-
-func (l *Logger) Close() {
-	l.logFile.Close()
-}
-
 type MyFormatter struct{}
 
 func (mf *MyFormatter) Format(entry *logrus.Entry) ([]byte, error) {
@@ -70,4 +39,46 @@ func (mf *MyFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		entry.Caller.Line,
 		entry.Message))
 	return b.Bytes(), nil
+}
+
+type Logger struct {
+	Log     *logrus.Logger
+	logFile *os.File
+}
+
+func NewLogger(level logrus.Level, writeToFile bool) (*Logger, error) {
+	logger := logrus.New()
+	logger.Level = level
+	logger.SetReportCaller(true)
+	logger.SetFormatter(&MyFormatter{})
+	var logFile *os.File
+	var w io.Writer
+
+	if writeToFile {
+		logFilePath := os.Getenv("LOG_FILE_PATH")
+		if logFilePath == "" {
+			logFilePath = "logs.txt" // Fallback на значение по умолчанию
+		}
+		var err error
+		logFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+		if err != nil {
+			logger.Error(err.Error())
+			return nil, err
+		}
+
+		w = io.MultiWriter(os.Stdout, logFile)
+	} else {
+		w = os.Stdout
+	}
+
+	logger.SetOutput(w)
+
+	return &Logger{
+		Log:     logger,
+		logFile: logFile,
+	}, nil
+}
+
+func (l *Logger) Close() {
+	l.logFile.Close()
 }

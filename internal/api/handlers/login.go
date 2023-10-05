@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -17,6 +18,9 @@ type LoginResponseData struct {
 }
 
 func (h Handlers) HandleLogin(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	// Создаем инстанс респонса и устанавливаем хэдер Content-Type
 	response := new(LoginResponseData)
 	w.Header().Set("Content-Type", "application/json")
@@ -50,7 +54,7 @@ func (h Handlers) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Пытаемся аутентифицировать пользователя
-	tokenString, err := h.app.Authenticate(requestData.Login, requestData.Password)
+	tokenString, err := h.app.Authenticate(ctx, requestData.Login, requestData.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		response.Message = "wrong username or password"

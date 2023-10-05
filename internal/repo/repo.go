@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"context"
 	"errors"
 
 	"github.com/maxzhirnov/rewardify/internal/logger"
@@ -13,11 +14,15 @@ var (
 )
 
 type store interface {
-	Ping() error
+	Ping(ctx context.Context) error
 	Bootstrap() error
-	GetUserByUsername(username string) (models.User, error)
-	CreateUser(user models.User) error
-	CheckAndInsertOrder(order models.Order) (bool, string, error)
+	GetUserByUsername(ctx context.Context, username string) (models.User, error)
+	InsertNewUser(ctx context.Context, user models.User) error
+	InsertNewOrder(ctx context.Context, order models.Order) (bool, string, error)
+	GetUsersOrders(ctx context.Context, userUUID string) ([]models.Order, error)
+	GetUsersBalance(ctx context.Context, userUUID string) (models.UsersBalance, error)
+	GetAllUnprocessedOrders(ctx context.Context) ([]models.Order, error)
+	UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order, newStatus string)
 }
 
 type Repo struct {
@@ -32,12 +37,12 @@ func NewRepo(s store, l *logger.Logger) *Repo {
 	}
 }
 
-func (r *Repo) GetUserByUsername(username string) (models.User, error) {
-	return r.store.GetUserByUsername(username)
+func (r *Repo) GetUserByUsername(ctx context.Context, username string) (models.User, error) {
+	return r.store.GetUserByUsername(ctx, username)
 }
 
-func (r *Repo) CreateUser(user models.User) error {
-	err := r.store.CreateUser(user)
+func (r *Repo) InsertNewUser(ctx context.Context, user models.User) error {
+	err := r.store.InsertNewUser(ctx, user)
 	if errors.Is(err, s.ErrUserAlreadyExist) {
 		return ErrUserAlreadyExist
 	}
@@ -45,14 +50,29 @@ func (r *Repo) CreateUser(user models.User) error {
 	return err
 }
 
-func (r *Repo) CheckAndInsertOrder(order models.Order) (bool, string, error) {
-	return r.store.CheckAndInsertOrder(order)
+func (r *Repo) InsertNewOrder(ctx context.Context, order models.Order) (bool, string, error) {
+	return r.store.InsertNewOrder(ctx, order)
 }
 
-func (r *Repo) Bootstrap() error {
+func (r *Repo) GetUsersOrders(ctx context.Context, userUUID string) ([]models.Order, error) {
+	return r.store.GetUsersOrders(ctx, userUUID)
+}
+
+func (r *Repo) GetUsersBalance(ctx context.Context, userUUID string) (models.UsersBalance, error) {
+	return r.store.GetUsersBalance(ctx, userUUID)
+}
+
+func (r *Repo) Bootstrap(ctx context.Context) error {
 	return r.store.Bootstrap()
 }
 
-func (r *Repo) Ping() error {
-	return r.store.Ping()
+func (r *Repo) Ping(ctx context.Context) error {
+	return r.store.Ping(ctx)
+}
+
+func (r *Repo) GetAllUnprocessedOrders(ctx context.Context) ([]models.Order, error) {
+	return r.store.GetAllUnprocessedOrders(ctx)
+}
+func (r *Repo) UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order, newStatus string) error {
+	return r.store.UpdateOrderAndCreateAccrual(ctx, order, newStatus)
 }

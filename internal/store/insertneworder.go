@@ -2,24 +2,19 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"errors"
-	"time"
-
-	"github.com/jackc/pgx/v5"
 
 	"github.com/maxzhirnov/rewardify/internal/models"
 )
 
-func (p *Postgres) CheckAndInsertOrder(order models.Order) (bool, string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Hour)
-	defer cancel()
-
+// InsertNewOrder inserts new order into database if order with specified OrderNumber already exists it returns false and error
+func (p *Postgres) InsertNewOrder(ctx context.Context, order models.Order) (bool, string, error) {
 	var existingUUID string
 	err := p.DB.QueryRowContext(ctx, "SELECT user_uuid FROM orders WHERE order_number = $1", order.OrderNumber).Scan(&existingUUID)
-	var errPgx = pgx.ErrNoRows
-	if errors.As(err, &errPgx) {
-		_, err := p.DB.ExecContext(ctx, "INSERT INTO orders (order_number, user_uuid, bonus_accrual_status, bonuses_accrued, bonuses_spent, created_at) VALUES ($1, $2, $3, $4, $5, $6)",
-			order.OrderNumber, order.UserUUID, order.BonusAccrualStatus, order.BonusesAccrued, order.BonusesSpent, order.CreatedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		_, err := p.DB.ExecContext(ctx, "INSERT INTO orders (order_number, user_uuid, bonus_accrual_status, created_at) VALUES ($1, $2, $3, $4)",
+			order.OrderNumber, order.UserUUID, order.BonusAccrualStatus, order.CreatedAt)
 		if err != nil {
 			return false, "", err
 		}

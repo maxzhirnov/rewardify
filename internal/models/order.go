@@ -8,11 +8,10 @@ import (
 type BonusAccrualStatus string
 
 const (
-	BonusAccrualStatusCreated        BonusAccrualStatus = "created"
-	BonusAccrualStatusCalculating    BonusAccrualStatus = "calculating"
-	BonusAccrualStatusAccrued        BonusAccrualStatus = "accrued"
-	BonusAccrualStatusPartiallySpent BonusAccrualStatus = "partially spent"
-	BonusAccrualStatusSpent          BonusAccrualStatus = "spent"
+	BonusAccrualStatusNew        BonusAccrualStatus = "NEW"
+	BonusAccrualStatusProcessing BonusAccrualStatus = "PROCESSING"
+	BonusAccrualStatusInvalid    BonusAccrualStatus = "INVALID"
+	BonusAccrualStatusProcessed  BonusAccrualStatus = "PROCESSED"
 )
 
 type Order struct {
@@ -20,7 +19,6 @@ type Order struct {
 	UserUUID           string             `json:"user_uuid"`
 	BonusAccrualStatus BonusAccrualStatus `json:"bonus_accrual_status"`
 	BonusesAccrued     float64            `json:"bonuses_accrued"`
-	BonusesSpent       float64            `json:"bonuses_spent"`
 	CreatedAt          time.Time          `json:"created_at"`
 }
 

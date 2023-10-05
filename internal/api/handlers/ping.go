@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 type PingResponseData struct {
@@ -11,6 +13,9 @@ type PingResponseData struct {
 }
 
 func (h Handlers) HandlePing(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	response := PingResponseData{}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -22,7 +27,7 @@ func (h Handlers) HandlePing(w http.ResponseWriter, r *http.Request) {
 		response.UUID = uuid.(string)
 	}
 
-	if err := h.app.Ping(); err != nil {
+	if err := h.app.Ping(ctx); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_, err := w.Write([]byte(err.Error()))
 		if err != nil {
