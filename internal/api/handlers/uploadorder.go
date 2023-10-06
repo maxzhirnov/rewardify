@@ -96,5 +96,4 @@ func (h Handlers) HandleUploadOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(jsonResponse)
-	return
 }

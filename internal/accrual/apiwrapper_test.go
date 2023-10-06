@@ -1,6 +1,7 @@
 package accrual
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -94,7 +95,7 @@ func Test_ApiWrapper_Fetch(t *testing.T) {
 			server := MockServer(tt.serverResponse)
 			defer server.Close()
 			apiWrapper := NewAPIWrapper(server.URL, httpClient, l)
-			result, err := apiWrapper.Fetch(tt.inputOrderID)
+			result, err := apiWrapper.Fetch(context.TODO(), tt.inputOrderID)
 
 			assert.Equal(t, tt.expectedErr, err)
 			assert.Equal(t, tt.expected, result)

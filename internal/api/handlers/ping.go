@@ -43,5 +43,4 @@ func (h Handlers) HandlePing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(jsonResponse)
-	return
 }

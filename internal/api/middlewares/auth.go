@@ -5,6 +5,11 @@ import (
 	"net/http"
 )
 
+const (
+	contextUsernameValueName = "username"
+	contextUUDValueName      = "uuid"
+)
+
 func (m Middlewares) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("token")
@@ -21,8 +26,8 @@ func (m Middlewares) AuthMiddleware(next http.Handler) http.Handler {
 		}
 		m.logger.Log.Debug("middleware authenticated username: ", user.Username)
 
-		ctx := context.WithValue(r.Context(), "username", user.Username)
-		ctx = context.WithValue(ctx, "uuid", user.UUID)
+		ctx := context.WithValue(r.Context(), contextUsernameValueName, user.Username)
+		ctx = context.WithValue(ctx, contextUUDValueName, user.UUID)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

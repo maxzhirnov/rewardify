@@ -8,7 +8,6 @@ import (
 
 // GetUsersOrders queries all orders by specific UserUUID and returns them as a slice of objects
 func (p *Postgres) GetUsersOrders(ctx context.Context, userUUID string) ([]models.Order, error) {
-	ctx = context.TODO()
 	sql := `
 SELECT
     orders.order_number,
@@ -25,6 +24,9 @@ ORDER BY orders.created_at
 	rows, err := p.DB.QueryContext(ctx, sql, userUUID)
 	if err != nil {
 		return nil, err
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
 	}
 	orders := make([]models.Order, 0)
 	for rows.Next() {

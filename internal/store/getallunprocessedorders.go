@@ -17,6 +17,9 @@ WHERE bonus_accrual_status NOT IN ('PROCESSED', 'INVALID')
 	if err != nil {
 		return nil, err
 	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
 
 	unprocessedOrders := make([]models.Order, 0)
 

@@ -1,6 +1,6 @@
 package store
 
-func (r *Postgres) Bootstrap() error {
+func (p *Postgres) Bootstrap() error {
 	// Создаем таблицу users
 	createUserTableSQL := `
 	CREATE TABLE IF NOT EXISTS users (
@@ -10,16 +10,16 @@ func (r *Postgres) Bootstrap() error {
 		created_at TIMESTAMP
 	);`
 
-	if _, err := r.DB.Exec(createUserTableSQL); err != nil {
-		r.logger.Log.Error(err)
+	if _, err := p.DB.Exec(createUserTableSQL); err != nil {
+		p.logger.Log.Error(err)
 		return err
 	}
 
 	// SQL запрос для создания индекса на поле Username, если он не существует
 	createIndexUserSQL := `CREATE UNIQUE INDEX IF NOT EXISTS index_username ON users (username);`
 
-	if _, err := r.DB.Exec(createIndexUserSQL); err != nil {
-		r.logger.Log.Error(err)
+	if _, err := p.DB.Exec(createIndexUserSQL); err != nil {
+		p.logger.Log.Error(err)
 		return err
 	}
 
@@ -33,8 +33,8 @@ func (r *Postgres) Bootstrap() error {
 	  FOREIGN KEY (user_uuid) REFERENCES users(uuid)
 	);
 `
-	if _, err := r.DB.Exec(createOrdersTableSQL); err != nil {
-		r.logger.Log.Error(err)
+	if _, err := p.DB.Exec(createOrdersTableSQL); err != nil {
+		p.logger.Log.Error(err)
 		return err
 	}
 
@@ -48,8 +48,8 @@ CREATE TABLE IF NOT EXISTS accruals (
 	FOREIGN KEY (order_number) REFERENCES orders(order_number),
 	FOREIGN KEY (user_uuid) REFERENCES users(uuid));
 `
-	if _, err := r.DB.Exec(createAccrualsTableSQL); err != nil {
-		r.logger.Log.Error(err)
+	if _, err := p.DB.Exec(createAccrualsTableSQL); err != nil {
+		p.logger.Log.Error(err)
 		return err
 	}
 
@@ -63,8 +63,8 @@ CREATE TABLE IF NOT EXISTS balances (
 	FOREIGN KEY (user_uuid) REFERENCES users(uuid)
 );
 `
-	if _, err := r.DB.Exec(createBalanceTableSQL); err != nil {
-		r.logger.Log.Error(err)
+	if _, err := p.DB.Exec(createBalanceTableSQL); err != nil {
+		p.logger.Log.Error(err)
 		return err
 	}
 
@@ -97,19 +97,19 @@ BEGIN
 	END IF;
 END $$;
 `
-	if _, err := r.DB.Exec(triggerSQL); err != nil {
-		r.logger.Log.Error(err)
+	if _, err := p.DB.Exec(triggerSQL); err != nil {
+		p.logger.Log.Error(err)
 		return err
 	}
 
 	// SQL запрос для создания индекса на поле orders_number, если он не существует
 	createIndexOrdersSQL := `CREATE UNIQUE INDEX IF NOT EXISTS index_order_number ON orders (order_number);`
 
-	if _, err := r.DB.Exec(createIndexOrdersSQL); err != nil {
-		r.logger.Log.Error(err)
+	if _, err := p.DB.Exec(createIndexOrdersSQL); err != nil {
+		p.logger.Log.Error(err)
 		return err
 	}
 
-	r.logger.Log.Info("Bootstrap completed successfully")
+	p.logger.Log.Info("Bootstrap completed successfully")
 	return nil
 }

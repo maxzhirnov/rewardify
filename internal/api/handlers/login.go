@@ -81,5 +81,4 @@ func (h Handlers) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(jsonResponse)
-	return
 }

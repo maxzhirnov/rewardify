@@ -108,12 +108,9 @@ func (app *App) Ping(ctx context.Context) error {
 }
 
 func (app *App) WaitForShutdown(ctx context.Context) {
-	for {
-		select {
-		case <-ctx.Done():
-			app.shutdown()
-		}
-	}
+	<-ctx.Done()
+	app.shutdown()
+
 }
 
 func (app *App) shutdown() {

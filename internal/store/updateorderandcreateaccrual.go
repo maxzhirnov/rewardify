@@ -22,18 +22,12 @@ WHERE order_number=$2
 	if err != nil {
 		return err
 	}
-	if err != nil {
-		return err
-	}
 
 	sqlInsertAccrual := `
 INSERT INTO accruals (user_uuid, order_number, accrued) 
 VALUES ($1, $2, $3)
 `
 	_, err = tx.ExecContext(ctx, sqlInsertAccrual, newStatus, order.OrderNumber, order.BonusesAccrued)
-	if err != nil {
-		return err
-	}
 	if err != nil {
 		return err
 	}

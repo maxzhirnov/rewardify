@@ -78,5 +78,4 @@ func (h Handlers) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	})
 	response := map[string]string{"message": "user was successfully registered"}
 	JSONResponse(w, http.StatusOK, response)
-	return
 }

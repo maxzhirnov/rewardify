@@ -55,12 +55,12 @@ func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	responseJson, err := json.Marshal(response)
+	responseJSON, err := json.Marshal(response)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("something went wrong"))
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseJson)
+	w.Write(responseJSON)
 }
