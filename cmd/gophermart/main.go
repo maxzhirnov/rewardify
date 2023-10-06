@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -21,6 +20,8 @@ import (
 )
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 	// Logging
 	logger, err := l.NewLogger(l.DebugLevel, true)
 	if err != nil {
@@ -51,8 +52,8 @@ func main() {
 	accrualService := accrual.NewService(repository, accrualAPIWrapper, logger)
 	appInstance := app.NewApp(authService, accrualService, repository, logger)
 
-	// Предусматриваем Gracefully shutdown
-	go waitForShutdown(appInstance)
+	go appInstance.StartAccrualService(ctx)
+	go appInstance.WaitForShutdown(ctx)
 
 	// Создаем Server со всеми его зависимостями
 	hd := handlers.NewHandlers(appInstance, logger)
@@ -64,13 +65,4 @@ func main() {
 	if err != nil {
 		return
 	}
-}
-
-func waitForShutdown(s *app.App) {
-	stopChan := make(chan os.Signal, 1)
-	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
-	<-stopChan
-
-	s.Shutdown()
-	os.Exit(0)
 }

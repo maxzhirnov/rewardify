@@ -20,7 +20,7 @@ type repo interface {
 }
 
 type api interface {
-	Fetch(orderID string) (*APIResponse, error)
+	Fetch(ctx context.Context, orderID string) (*APIResponse, error)
 }
 
 type Service struct {
@@ -65,7 +65,7 @@ func (s *Service) processOrders(ctx context.Context) {
 
 func (s *Service) processOrder(ctx context.Context, order models.Order) {
 	for {
-		response, err := s.apiWrapper.Fetch(order.OrderNumber)
+		response, err := s.apiWrapper.Fetch(ctx, order.OrderNumber)
 		if errors.Is(err, errTooManyRequests) {
 			time.Sleep(resubmitRequestForStatusUpdate)
 			continue

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"errors"
+	"os"
 	"time"
 
 	"github.com/maxzhirnov/rewardify/internal/auth"
@@ -31,6 +32,7 @@ type authService interface {
 }
 
 type accrualService interface {
+	MonitorAndUpdateOrders(ctx context.Context)
 }
 
 type App struct {
@@ -47,6 +49,10 @@ func NewApp(auth authService, accrual accrualService, repo repo, l *logger.Logge
 		repo:           repo,
 		logger:         l,
 	}
+}
+
+func (app *App) StartAccrualService(ctx context.Context) {
+	app.accrualService.MonitorAndUpdateOrders(ctx)
 }
 
 func (app *App) Register(ctx context.Context, username, password string) error {
@@ -101,6 +107,16 @@ func (app *App) Ping(ctx context.Context) error {
 	return app.repo.Ping(ctx)
 }
 
-func (app *App) Shutdown() {
+func (app *App) WaitForShutdown(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			app.shutdown()
+		}
+	}
+}
+
+func (app *App) shutdown() {
 	app.logger.Log.Info("Shutting down the application")
+	os.Exit(0)
 }

@@ -1,12 +1,14 @@
 package accrual
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/maxzhirnov/rewardify/internal/logger"
 )
@@ -37,7 +39,10 @@ func NewAPIWrapper(addr string, client *http.Client, logger *logger.Logger) *API
 	}
 }
 
-func (a APIWrapper) Fetch(orderNumber string) (*APIResponse, error) {
+func (a APIWrapper) Fetch(ctx context.Context, orderNumber string) (*APIResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
+	defer cancel()
+
 	apiURL, err := url.JoinPath(a.addr, "/api/orders/", orderNumber)
 	if err != nil {
 		errWrapped := fmt.Errorf("error building api apiURL: %w", err)
@@ -45,7 +50,15 @@ func (a APIWrapper) Fetch(orderNumber string) (*APIResponse, error) {
 		return nil, errWrapped
 	}
 
-	resp, err := a.client.Get(apiURL)
+	req, err := http.NewRequest("GET", apiURL, nil)
+	if err != nil {
+		a.logger.Log.Error(err)
+		return nil, err
+	}
+
+	req = req.WithContext(ctx)
+
+	resp, err := a.client.Do(req)
 	if err != nil {
 		errWrapped := fmt.Errorf("error fetching api: %w", err)
 		a.logger.Log.Error(errWrapped)
