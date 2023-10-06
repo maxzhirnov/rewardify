@@ -13,10 +13,10 @@ SELECT
     orders.order_number,
     orders.user_uuid,
     orders.bonus_accrual_status,
-    COALESCE(accruals.accrued, 0) AS accrued,
+    COALESCE(accruals_calculated.accrued, 0) AS accrued,
     orders.created_at
 FROM orders
-LEFT JOIN accruals ON orders.order_number=accruals.order_number
+LEFT JOIN accruals_calculated ON orders.order_number=accruals_calculated.order_number
 WHERE orders.user_uuid=$1
 ORDER BY orders.created_at
 	`

@@ -40,7 +40,7 @@ func (p *Postgres) Bootstrap() error {
 
 	// Создаем таблицу с начислениями по orders
 	createAccrualsTableSQL := `
-CREATE TABLE IF NOT EXISTS accruals (
+CREATE TABLE IF NOT EXISTS accruals_calculated (
 	id SERIAL PRIMARY KEY,
 	user_uuid TEXT,
 	order_number TEXT,
@@ -92,7 +92,7 @@ DO $$
 BEGIN 
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_bonus') THEN
 		CREATE TRIGGER update_bonus
-		AFTER INSERT ON accruals
+		AFTER INSERT ON accruals_calculated
 		FOR EACH ROW EXECUTE FUNCTION update_bonus_balance();
 	END IF;
 END $$;

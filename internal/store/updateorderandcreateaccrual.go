@@ -24,10 +24,10 @@ WHERE order_number=$2
 	}
 
 	sqlInsertAccrual := `
-INSERT INTO accruals (user_uuid, order_number, accrued) 
+INSERT INTO accruals_calculated (user_uuid, order_number, accrued) 
 VALUES ($1, $2, $3)
 `
-	_, err = tx.ExecContext(ctx, sqlInsertAccrual, newStatus, order.OrderNumber, order.BonusesAccrued)
+	_, err = tx.ExecContext(ctx, sqlInsertAccrual, order.UserUUID, order.OrderNumber, order.BonusesAccrued)
 	if err != nil {
 		return err
 	}

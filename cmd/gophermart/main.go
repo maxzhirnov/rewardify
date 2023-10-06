@@ -50,9 +50,14 @@ func main() {
 	httpClient := &http.Client{}
 	accrualAPIWrapper := accrual.NewAPIWrapper(cfg.AccrualSystemAddress(), httpClient, logger)
 	accrualService := accrual.NewService(repository, accrualAPIWrapper, logger)
-	appInstance := app.NewApp(authService, accrualService, repository, logger)
+	appInstance := app.NewApp(authService, accrualService, repository, cfg, logger)
 
-	go appInstance.StartAccrualService(ctx)
+	go func() {
+		err := appInstance.StartAccrualService(ctx)
+		if err != nil {
+			logger.Log.Fatal(err)
+		}
+	}()
 	go appInstance.WaitForShutdown(ctx)
 
 	// Создаем Server со всеми его зависимостями

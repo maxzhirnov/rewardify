@@ -32,9 +32,21 @@ func (mf *MyFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	level := entry.Level
 	strList := strings.Split(entry.Caller.File, "/")
 	fileName := strList[len(strList)-1]
-	b.WriteString(fmt.Sprintf("[%s] - %s - %s - [line:%d] - %s\n",
+
+	levelColor := map[string]string{
+		PanicLevel.String(): "\033[31m", // Красный
+		FatalLevel.String(): "\033[31m", // Красный
+		ErrorLevel.String(): "\033[31m", // Красный
+		WarnLevel.String():  "\033[33m", // Желтый
+		InfoLevel.String():  "\033[32m", // Зеленый
+		DebugLevel.String(): "\033[36m", // Голубой
+		TraceLevel.String(): "\033[34m", // Синий
+	}
+
+	b.WriteString(fmt.Sprintf("%s[%s]\033[37m %s | %s | [line:%d]\n ┗ \u001B[0m%s\n",
+		levelColor[level.String()],
 		strings.ToUpper(level.String()),
-		entry.Time.Format("2006-01-02 15:04:05,678"),
+		entry.Time.Format("06-01-02 15:04:05"),
 		fileName,
 		entry.Caller.Line,
 		entry.Message))
