@@ -52,10 +52,6 @@ func main() {
 	accrualService := accrual.NewService(repository, accrualAPIWrapper, logger)
 	appInstance := app.NewApp(authService, accrualService, repository, logger)
 
-	err = accrualService.RunBinary(cfg.AccrualSystemAddress(), cfg.DatabaseURI())
-	if err != nil {
-		logger.Log.Fatal(err)
-	}
 	go appInstance.StartAccrualUpdater(ctx)
 	go appInstance.WaitForShutdown(ctx)
 
