@@ -27,10 +27,12 @@ WHERE order_number=$2
 INSERT INTO accruals_calculated (user_uuid, order_number, accrued) 
 VALUES ($1, $2, $3)
 `
-	p.logger.Log.Debug("storage inserting accrual with following args: ", order.UserUUID, order.OrderNumber, order.BonusesAccrued)
-	_, err = tx.ExecContext(ctx, sqlInsertAccrual, order.UserUUID, order.OrderNumber, order.BonusesAccrued)
-	if err != nil {
-		return err
+	if order.BonusAccrualStatus == models.BonusAccrualStatusProcessed {
+		p.logger.Log.Debugln("storage inserting accrual with following args: ", order.UserUUID, order.OrderNumber, order.BonusesAccrued)
+		_, err = tx.ExecContext(ctx, sqlInsertAccrual, order.UserUUID, order.OrderNumber, order.BonusesAccrued)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = tx.Commit()

@@ -12,10 +12,10 @@ type GetOrdersResponseData struct {
 }
 
 type OrderDTO struct {
-	OrderNumber string `json:"number"`
-	Status      string `json:"status"`
-	Accrual     int    `json:"accrual"`
-	UploadedAt  string `json:"uploaded_at"`
+	OrderNumber string  `json:"number"`
+	Status      string  `json:"status"`
+	Accrual     float32 `json:"accrual"`
+	UploadedAt  string  `json:"uploaded_at"`
 }
 
 func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +51,7 @@ func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
 		response[i] = OrderDTO{
 			OrderNumber: o.OrderNumber,
 			Status:      string(o.BonusAccrualStatus),
-			Accrual:     int(o.BonusesAccrued),
+			Accrual:     o.BonusesAccrued,
 			UploadedAt:  o.CreatedAt.Format(time.RFC3339),
 		}
 	}

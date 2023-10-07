@@ -77,10 +77,10 @@ func (s *Service) processOrder(ctx context.Context, order models.Order) {
 			if err != nil {
 				s.logger.Log.Error("Error updating response:", err)
 			}
-			continue
+			return
 		} else if errors.Is(err, errBadRequest) {
 			s.logger.Log.Error(err)
-			continue
+			return
 		} else if err != nil {
 			s.logger.Log.Error("Error fetching response:", err)
 			return
