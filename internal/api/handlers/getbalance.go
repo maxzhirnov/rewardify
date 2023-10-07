@@ -13,6 +13,7 @@ type GetBalanceResponseData struct {
 }
 
 func (h Handlers) HandleGetBalance(w http.ResponseWriter, r *http.Request) {
+	h.logger.Log.Debug("handler HandleGetBalance starting handle request...")
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 

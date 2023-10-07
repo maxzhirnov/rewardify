@@ -207,8 +207,8 @@ func TestHandlers_HandleRegister(t *testing.T) {
 			rr := httptest.NewRecorder()
 			r.ServeHTTP(rr, req)
 			assert.Equal(t, tt.expected.statusCode, rr.Code)
-			defer rr.Result().Body.Close()
 			cookies := rr.Result().Cookies()
+			defer rr.Result().Body.Close()
 			if tt.expected.shouldHaveCookie {
 				var found bool
 				for _, cookie := range cookies {

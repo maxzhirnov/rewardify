@@ -43,7 +43,7 @@ func (a APIWrapper) Fetch(ctx context.Context, orderNumber string) (*APIResponse
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 
-	apiURL := "http://" + path.Join(a.addr, "api", "orders", orderNumber)
+	apiURL := path.Join(a.addr, "api", "orders", orderNumber)
 
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {

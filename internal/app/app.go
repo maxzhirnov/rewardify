@@ -33,7 +33,6 @@ type authService interface {
 
 type accrualService interface {
 	MonitorAndUpdateOrders(ctx context.Context)
-	RunBinary(a, d string) error
 }
 
 type App struct {
@@ -54,14 +53,6 @@ func NewApp(auth authService, accrual accrualService, repo repo, l *logger.Logge
 
 func (app *App) StartAccrualUpdater(ctx context.Context) {
 	app.accrualService.MonitorAndUpdateOrders(ctx)
-}
-
-func (app *App) StartAccrualBinaries(a, d string) error {
-	err := app.accrualService.RunBinary(a, d)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (app *App) Register(ctx context.Context, username, password string) error {

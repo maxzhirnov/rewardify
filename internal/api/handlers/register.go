@@ -21,6 +21,7 @@ type RegisterRequestData struct {
 }
 
 func (h Handlers) HandleRegister(w http.ResponseWriter, r *http.Request) {
+	h.logger.Log.Debug("handler HandleRegister starting handle request...")
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
