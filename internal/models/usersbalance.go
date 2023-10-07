@@ -2,7 +2,7 @@ package models
 
 type UsersBalance struct {
 	UserUUID  string
-	Earned    float64
-	Current   float64
-	Withdrawn float64
+	Earned    float32
+	Current   float32
+	Withdrawn float32
 }

@@ -22,7 +22,7 @@ var (
 type APIResponse struct {
 	Order   string  `json:"order"`
 	Status  string  `json:"status"`
-	Accrual float64 `json:"accrual"`
+	Accrual float32 `json:"accrual"`
 }
 
 type APIWrapper struct {
@@ -86,6 +86,7 @@ func (a APIWrapper) Fetch(ctx context.Context, orderNumber string) (*APIResponse
 	if err != nil {
 		return nil, err
 	}
+	a.logger.Log.Debug("apiwrapper reurning response: ", response)
 
 	return response, nil
 }

@@ -41,13 +41,13 @@ func Test_ApiWrapper_Fetch(t *testing.T) {
 {
 "order": "%s",
 "status": "PROCESSED",
-"accrual": 500
+"accrual": 732.3
 }`, orderID)))
 			},
 			expected: &APIResponse{
 				Order:   "123456",
 				Status:  "PROCESSED",
-				Accrual: 500,
+				Accrual: 732.3,
 			},
 			expectedErr: nil,
 		},

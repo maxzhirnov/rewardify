@@ -18,7 +18,7 @@ type Order struct {
 	OrderNumber        string             `json:"order_number"`
 	UserUUID           string             `json:"user_uuid"`
 	BonusAccrualStatus BonusAccrualStatus `json:"bonus_accrual_status"`
-	BonusesAccrued     float64            `json:"bonuses_accrued"`
+	BonusesAccrued     float32            `json:"bonuses_accrued"`
 	CreatedAt          time.Time          `json:"created_at"`
 }
 

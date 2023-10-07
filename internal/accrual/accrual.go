@@ -68,23 +68,26 @@ func (s *Service) processOrder(ctx context.Context, order models.Order) {
 	for {
 		response, err := s.apiWrapper.Fetch(ctx, order.OrderNumber)
 		if errors.Is(err, errTooManyRequests) {
+			s.logger.Log.Error(err)
 			time.Sleep(resubmitRequestForStatusUpdate)
 			continue
 		} else if errors.Is(err, errNotRegistered) {
+			s.logger.Log.Error(err)
 			err := s.repo.UpdateOrderAndCreateAccrual(ctx, order, string(models.BonusAccrualStatusInvalid))
 			if err != nil {
 				s.logger.Log.Error("Error updating response:", err)
 			}
-
-			return
+			continue
 		} else if errors.Is(err, errBadRequest) {
-
+			s.logger.Log.Error(err)
+			continue
 		} else if err != nil {
 			s.logger.Log.Error("Error fetching response:", err)
 			return
 		}
 
 		if response.Status == "PROCESSED" || response.Status == "INVALID" {
+			s.logger.Log.Debug("accrual setting order bonusesAccrues to: ", response.Accrual)
 			order.BonusesAccrued = response.Accrual
 			err := s.repo.UpdateOrderAndCreateAccrual(ctx, order, response.Status)
 			if err != nil {
