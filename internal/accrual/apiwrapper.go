@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path"
+	"net/url"
 	"time"
 
 	"github.com/maxzhirnov/rewardify/internal/logger"
@@ -43,7 +43,11 @@ func (a APIWrapper) Fetch(ctx context.Context, orderNumber string) (*APIResponse
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 
-	apiURL := path.Join(a.addr, "api", "orders", orderNumber)
+	apiURL, err := url.JoinPath(a.addr, "api", "orders", orderNumber)
+	if err != nil {
+		a.logger.Log.Error(err)
+		return nil, err
+	}
 
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {

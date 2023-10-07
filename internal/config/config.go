@@ -18,7 +18,7 @@ const (
 
 	defaultRunAddress           = ":8181"
 	defaultDatabaseURI          = ""
-	defaultAccrualSystemAddress = "localhost:8123"
+	defaultAccrualSystemAddress = "http://localhost:8123"
 
 	usageRunAddress           = "Provide address where app will run, e.g :8181"
 	usageDatabaseURI          = "Provide URI string of Postgresql database"

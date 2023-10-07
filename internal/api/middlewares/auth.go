@@ -5,11 +5,9 @@ import (
 	"net/http"
 )
 
-type ContextValueName string
-
 const (
-	contextUsernameValueName ContextValueName = "username"
-	contextUUDValueName      ContextValueName = "uuid"
+	contextUsernameValueName = "username"
+	contextUUDValueName      = "uuid"
 )
 
 func (m Middlewares) AuthMiddleware(next http.Handler) http.Handler {
