@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/maxzhirnov/rewardify/internal/auth"
-	"github.com/maxzhirnov/rewardify/internal/config"
 	"github.com/maxzhirnov/rewardify/internal/logger"
 	"github.com/maxzhirnov/rewardify/internal/models"
 )
@@ -41,26 +40,27 @@ type App struct {
 	authService    authService
 	accrualService accrualService
 	repo           repo
-	config         *config.Config
 	logger         *logger.Logger
 }
 
-func NewApp(auth authService, accrual accrualService, repo repo, config *config.Config, l *logger.Logger) *App {
+func NewApp(auth authService, accrual accrualService, repo repo, l *logger.Logger) *App {
 	return &App{
 		authService:    auth,
 		accrualService: accrual,
 		repo:           repo,
-		config:         config,
 		logger:         l,
 	}
 }
 
-func (app *App) StartAccrualService(ctx context.Context) error {
+func (app *App) StartAccrualUpdater(ctx context.Context) {
 	app.accrualService.MonitorAndUpdateOrders(ctx)
-	//err := app.accrualService.RunBinary(app.config.AccrualSystemAddress(), app.config.DatabaseURI())
-	//if err != nil {
-	//	return err
-	//}
+}
+
+func (app *App) StartAccrualBinaries(a, d string) error {
+	err := app.accrualService.RunBinary(a, d)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

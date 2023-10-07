@@ -46,28 +46,28 @@ func (s *Service) RunBinary(a, d string) error {
 
 	switch runtime.GOOS {
 	case "windows":
-		cmd = exec.Command("cmd/accrual/accrual_windows_amd64", "-a", "-a", a, "-d", d)
+		cmd = exec.Command("cmd/accrual/accrual_windows_amd64", "-a", a, "-d", d)
 	case "linux":
-		cmd = exec.Command("cmd/accrual/accrual_linux_amd64", "-a", "-a", a, "-d", d)
+		cmd = exec.Command("cmd/accrual/accrual_linux_amd64", "-a", a, "-d", d)
 	case "darwin":
 		switch runtime.GOARCH {
 		case "arm64":
 			cmd = exec.Command("cmd/accrual/accrual_darwin_arm64", "-a", a, "-d", d)
-			s.logger.Log.Debug(cmd)
+
 		case "amd64":
 			cmd = exec.Command("cmd/accrual/accrual_darwin_amd64", "-a", a, "-d", d)
 		}
 	default:
 		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
 	}
+	s.logger.Log.Debug("executing command: ", cmd.String())
 	// Запуск команды
-	o, err := cmd.CombinedOutput()
-	//err := cmd.Start()
+	//o, err := cmd.CombinedOutput()
+	err := cmd.Start()
 	if err != nil {
 		return err
 	}
-
-	s.logger.Log.Warn(string(o))
+	//s.logger.Log.Warn(string(o))
 	return nil
 }
 
@@ -98,6 +98,7 @@ func (s *Service) processOrders(ctx context.Context) {
 }
 
 func (s *Service) processOrder(ctx context.Context, order models.Order) {
+	s.logger.Log.Debug("Starting to process order: ", order.OrderNumber)
 	for {
 		response, err := s.apiWrapper.Fetch(ctx, order.OrderNumber)
 		if errors.Is(err, errTooManyRequests) {
