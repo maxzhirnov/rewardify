@@ -65,7 +65,9 @@ func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
 		JSONResponse(w, http.StatusInternalServerError, response)
 		return
 	}
+
 	h.logger.Log.Debugln("getAllOrders json", string(responseJSON))
 
-	JSONResponse(w, http.StatusOK, responseJSON)
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseJSON)
 }

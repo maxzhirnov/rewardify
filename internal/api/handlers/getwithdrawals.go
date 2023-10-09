@@ -10,14 +10,14 @@ import (
 type WithdrawalDTO struct {
 	Order       string  `json:"order"`
 	Sum         float32 `json:"sum"`
-	ProcessedAt string  `json:"processedAt"`
+	ProcessedAt string  `json:"processed_at"`
 }
 
 func (h Handlers) HandleListAllWithdrawals(w http.ResponseWriter, r *http.Request) {
 	h.logger.Log.Debug("handler HandleListAllWithdrawals starting handle request...")
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-
+	w.Header().Set("Content-Type", "application/json")
 	userUUID := r.Context().Value("uuid").(string)
 	if userUUID == "" {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -53,5 +53,6 @@ func (h Handlers) HandleListAllWithdrawals(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	JSONResponse(w, http.StatusOK, responseJSON)
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseJSON)
 }
