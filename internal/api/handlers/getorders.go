@@ -39,6 +39,8 @@ func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.logger.Log.Debugln("GetAllOrders", orders)
+
 	if len(orders) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		w.Write([]byte("no content"))
@@ -61,6 +63,8 @@ func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("something went wrong"))
 	}
+
+	h.logger.Log.Debugln("getAllOrders json", string(responseJSON))
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(responseJSON)
