@@ -87,15 +87,19 @@ func (s *Service) processOrder(ctx context.Context, order models.Order) {
 		}
 
 		if response.Status == "PROCESSED" || response.Status == "INVALID" {
-			s.logger.Log.Debug("accrual setting order bonusesAccrues to: ", response.Accrual)
+			switch response.Status {
+			case "PROCESSED":
+				order.BonusAccrualStatus = models.BonusAccrualStatusProcessed
+			case "INVALID":
+				order.BonusAccrualStatus = models.BonusAccrualStatusInvalid
+			}
 			order.BonusesAccrued = response.Accrual
+			s.logger.Log.Debugln("processOrder sending order to update", order)
 			err := s.repo.UpdateOrderAndCreateAccrual(ctx, order, response.Status)
 			if err != nil {
 				s.logger.Log.Error("Error updating response:", err)
 			}
 			return
 		}
-
-		time.Sleep(resubmitRequestForStatusUpdate)
 	}
 }
