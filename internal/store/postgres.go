@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	ErrUserAlreadyExist = errors.New("user already exists")
+	ErrUserAlreadyExist  = errors.New("user already exists")
+	ErrInsufficientFunds = errors.New("insufficient bonus balance")
 )
 
 type Postgres struct {

@@ -18,7 +18,9 @@ type app interface {
 	Register(ctx context.Context, username, password string) error
 	Authenticate(ctx context.Context, username, password string) (string, error)
 	UploadOrder(ctx context.Context, orderNumber, userUUID string) error
+	CreateWithdrawal(ctx context.Context, userUUID, orderNumber string, amount float32) error
 	GetAllOrders(ctx context.Context, userUUID string) ([]models.Order, error)
+	GetAllWithdrawals(ctx context.Context, usrUUID string) ([]models.Withdrawal, error)
 	GetBalance(ctx context.Context, userUUID string) (models.UsersBalance, error)
 	Ping(ctx context.Context) error
 }

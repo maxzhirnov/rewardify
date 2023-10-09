@@ -27,15 +27,16 @@ func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
 
 	userUUID := r.Context().Value("uuid").(string)
 	if userUUID == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("unauthorized"))
+
+		response := map[string]string{"message": "unauthorized"}
+		JSONResponse(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	orders, err := h.app.GetAllOrders(ctx, userUUID)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("unauthorized"))
+		response := map[string]string{"message": "something went wrong"}
+		JSONResponse(w, http.StatusInternalServerError, response)
 		return
 	}
 
@@ -60,12 +61,11 @@ func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
 
 	responseJSON, err := json.Marshal(response)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("something went wrong"))
+		response := map[string]string{"message": "something went wrong"}
+		JSONResponse(w, http.StatusInternalServerError, response)
+		return
 	}
-
 	h.logger.Log.Debugln("getAllOrders json", string(responseJSON))
 
-	w.WriteHeader(http.StatusOK)
-	w.Write(responseJSON)
+	JSONResponse(w, http.StatusOK, responseJSON)
 }

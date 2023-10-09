@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	ErrUserAlreadyExist = errors.New("user already exists")
+	ErrUserAlreadyExist  = errors.New("user already exists")
+	ErrInsufficientFunds = errors.New("insufficient bonus balance")
 )
 
 type store interface {
@@ -19,10 +20,12 @@ type store interface {
 	GetUserByUsername(ctx context.Context, username string) (models.User, error)
 	InsertNewUser(ctx context.Context, user models.User) error
 	InsertNewOrder(ctx context.Context, order models.Order) (bool, string, error)
+	InsertNewWithdrawal(ctx context.Context, withdrawal models.Withdrawal) error
 	GetUsersOrders(ctx context.Context, userUUID string) ([]models.Order, error)
 	GetUsersBalance(ctx context.Context, userUUID string) (models.UsersBalance, error)
 	GetAllUnprocessedOrders(ctx context.Context) ([]models.Order, error)
 	UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order, newStatus string) error
+	GetUsersWithdrawals(ctx context.Context, usrUUID string) ([]models.Withdrawal, error)
 }
 
 type Repo struct {
@@ -54,8 +57,22 @@ func (r *Repo) InsertNewOrder(ctx context.Context, order models.Order) (bool, st
 	return r.store.InsertNewOrder(ctx, order)
 }
 
+func (r *Repo) InsertNewWithdrawal(ctx context.Context, withdrawal models.Withdrawal) error {
+	err := r.store.InsertNewWithdrawal(ctx, withdrawal)
+	if errors.Is(err, s.ErrInsufficientFunds) {
+		return ErrInsufficientFunds
+	} else if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *Repo) GetUsersOrders(ctx context.Context, userUUID string) ([]models.Order, error) {
 	return r.store.GetUsersOrders(ctx, userUUID)
+}
+
+func (r *Repo) GetUsersWithdrawals(ctx context.Context, usrUUID string) ([]models.Withdrawal, error) {
+	return r.store.GetUsersWithdrawals(ctx, usrUUID)
 }
 
 func (r *Repo) GetUsersBalance(ctx context.Context, userUUID string) (models.UsersBalance, error) {

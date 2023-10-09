@@ -9,6 +9,7 @@ import (
 	"github.com/maxzhirnov/rewardify/internal/auth"
 	"github.com/maxzhirnov/rewardify/internal/logger"
 	"github.com/maxzhirnov/rewardify/internal/models"
+	r "github.com/maxzhirnov/rewardify/internal/repo"
 )
 
 var (
@@ -16,11 +17,14 @@ var (
 	ErrInvalidOrderNumber          = errors.New("invalid order number")
 	ErrAlreadyCreatedByUser        = errors.New("order already exist")
 	ErrAlreadyCreatedByAnotherUser = errors.New("order already have been uploaded by another user")
+	ErrInsufficientFunds           = errors.New("insufficient bonus balance")
 )
 
 type repo interface {
 	InsertNewOrder(ctx context.Context, order models.Order) (bool, string, error)
+	InsertNewWithdrawal(ctx context.Context, withdrawal models.Withdrawal) error
 	GetUsersOrders(ctx context.Context, userUUID string) ([]models.Order, error)
+	GetUsersWithdrawals(ctx context.Context, usrUUID string) ([]models.Withdrawal, error)
 	GetUsersBalance(ctx context.Context, userUUID string) (models.UsersBalance, error)
 	Bootstrap(ctx context.Context) error
 	Ping(ctx context.Context) error
@@ -101,6 +105,34 @@ func (app *App) GetAllOrders(ctx context.Context, userUUID string) ([]models.Ord
 
 func (app *App) GetBalance(ctx context.Context, userUUID string) (models.UsersBalance, error) {
 	return app.repo.GetUsersBalance(ctx, userUUID)
+}
+
+func (app *App) GetAllWithdrawals(ctx context.Context, usrUUID string) ([]models.Withdrawal, error) {
+	return app.repo.GetUsersWithdrawals(ctx, usrUUID)
+}
+
+func (app *App) CreateWithdrawal(ctx context.Context, userUUID, orderNumber string, amount float32) error {
+	// check if vald luhn number
+	o := models.Order{OrderNumber: orderNumber}
+	if !o.IsValidOrderNumber() {
+		return ErrInvalidOrderNumber
+	}
+
+	// create and process withdrawal
+	w := models.Withdrawal{
+		UserUUID:    userUUID,
+		OrderNumber: orderNumber,
+		Amount:      amount,
+		CreatedAt:   time.Now(),
+	}
+
+	err := app.repo.InsertNewWithdrawal(ctx, w)
+	if errors.Is(err, r.ErrInsufficientFunds) {
+		return ErrInsufficientFunds
+	} else if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (app *App) Ping(ctx context.Context) error {

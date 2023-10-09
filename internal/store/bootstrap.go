@@ -68,7 +68,23 @@ CREATE TABLE IF NOT EXISTS balances (
 		return err
 	}
 
-	// Триггер для обновления баланса бонусов
+	// Создаем таблицу с withdrawals пользователей
+	createWithdrawalsTableSQL := `
+CREATE TABLE IF NOT EXISTS withdrawals (
+	id SERIAL PRIMARY KEY,
+	user_uuid TEXT,
+	order_number TEXT,
+	withdrew REAL,
+	created_at TIMESTAMP,
+	FOREIGN KEY (user_uuid) REFERENCES users(uuid)
+);
+`
+	if _, err := p.DB.Exec(createWithdrawalsTableSQL); err != nil {
+		p.logger.Log.Error(err)
+		return err
+	}
+
+	// Триггеры для обновления баланса бонусов
 	triggerSQL := `
 CREATE OR REPLACE FUNCTION update_bonus_balance()
 RETURNS TRIGGER AS $$
@@ -98,6 +114,40 @@ BEGIN
 END $$;
 `
 	if _, err := p.DB.Exec(triggerSQL); err != nil {
+		p.logger.Log.Error(err)
+		return err
+	}
+
+	// Триггер для списания
+	triggerWithdrawSQL := `
+CREATE OR REPLACE FUNCTION update_bonus_balance_withdraw()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Обновляем баланс бонусов для пользователя
+    UPDATE balances
+    SET redeemed_bonus = balances.redeemed_bonus + NEW.withdrew
+    WHERE user_uuid = NEW.user_uuid;
+
+    -- Если пользователя нет в таблице user_bonus, создаем новую запись
+    IF NOT FOUND THEN
+        INSERT INTO balances(user_uuid, total_bonus, redeemed_bonus)
+        VALUES (NEW.user_uuid, 0, NEW.withdrew);
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_bonus_withdraw') THEN
+		CREATE TRIGGER update_bonus_withdraw
+		AFTER INSERT ON withdrawals
+		FOR EACH ROW EXECUTE FUNCTION update_bonus_balance_withdraw();
+	END IF;
+END $$;
+`
+	if _, err := p.DB.Exec(triggerWithdrawSQL); err != nil {
 		p.logger.Log.Error(err)
 		return err
 	}
