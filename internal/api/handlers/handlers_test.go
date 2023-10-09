@@ -43,6 +43,16 @@ func (m *MockApp) GetBalance(ctx context.Context, userUUID string) (models.Users
 	args := m.Called(ctx, userUUID)
 	return args.Get(0).(models.UsersBalance), args.Error(1)
 }
+func (m *MockApp) CreateWithdrawal(ctx context.Context, userUUID string, orderNumber string, sum float32) error {
+	args := m.Called(ctx, userUUID, orderNumber, sum)
+	return args.Error(0)
+}
+
+func (m *MockApp) GetAllWithdrawals(ctx context.Context, usrUUID string) ([]models.Withdrawal, error) {
+	args := m.Called(ctx, usrUUID)
+	return args.Get(0).([]models.Withdrawal), args.Error(0)
+}
+
 func (m *MockApp) Ping(ctx context.Context) error {
 	args := m.Called(ctx)
 	return args.Error(0)

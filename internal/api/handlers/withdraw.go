@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/maxzhirnov/rewardify/internal/api/middlewares"
 	app2 "github.com/maxzhirnov/rewardify/internal/app"
 )
 
@@ -21,7 +22,7 @@ func (h Handlers) HandleWithdraw(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	userUUID := r.Context().Value("uuid").(string)
+	userUUID := r.Context().Value(middlewares.UUIDContextKey).(string)
 	if userUUID == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte("unauthorized"))

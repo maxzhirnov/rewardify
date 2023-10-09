@@ -5,9 +5,11 @@ import (
 	"net/http"
 )
 
+type ContextCustomKey string
+
 const (
-	contextUsernameValueName = "username"
-	contextUUDValueName      = "uuid"
+	UsernameContextKey ContextCustomKey = "username"
+	UUIDContextKey     ContextCustomKey = "uuid"
 )
 
 func (m Middlewares) AuthMiddleware(next http.Handler) http.Handler {
@@ -26,8 +28,8 @@ func (m Middlewares) AuthMiddleware(next http.Handler) http.Handler {
 		}
 		m.logger.Log.Debug("middleware authenticated username: ", user.Username)
 
-		ctx := context.WithValue(r.Context(), contextUsernameValueName, user.Username)
-		ctx = context.WithValue(ctx, contextUUDValueName, user.UUID)
+		ctx := context.WithValue(r.Context(), UsernameContextKey, user.Username)
+		ctx = context.WithValue(ctx, UUIDContextKey, user.UUID)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

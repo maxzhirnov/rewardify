@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+
+	"github.com/maxzhirnov/rewardify/internal/api/middlewares"
 )
 
 type GetBalanceResponseData struct {
@@ -19,7 +21,7 @@ func (h Handlers) HandleGetBalance(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	userUUID := r.Context().Value("uuid").(string)
+	userUUID := r.Context().Value(middlewares.UUIDContextKey).(string)
 	if userUUID == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte("unauthorized"))
