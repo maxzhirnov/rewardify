@@ -18,6 +18,14 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
+type ContextCustomKey string
+
+const (
+	UsernameContextKey ContextCustomKey = "username"
+	UUIDContextKey     ContextCustomKey = "uuid"
+	JWTCookeName                        = "token"
+)
+
 type repo interface {
 	GetUserByUsername(ctx context.Context, username string) (models.User, error)
 	InsertNewUser(ctx context.Context, user models.User) error

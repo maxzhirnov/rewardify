@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/maxzhirnov/rewardify/internal/api/middlewares"
+	"github.com/maxzhirnov/rewardify/internal/auth"
 )
 
 type WithdrawalDTO struct {
@@ -15,12 +15,17 @@ type WithdrawalDTO struct {
 	ProcessedAt string  `json:"processed_at"`
 }
 
-func (h Handlers) HandleListAllWithdrawals(w http.ResponseWriter, r *http.Request) {
-	h.logger.Log.Debug("handler HandleListAllWithdrawals starting handle request...")
+func (h Handlers) HandleGetWithdrawals(w http.ResponseWriter, r *http.Request) {
+	h.logger.Log.Debug("handler HandleGetWithdrawals starting handle request...")
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	w.Header().Set("Content-Type", "application/json")
-	userUUID := r.Context().Value(middlewares.UUIDContextKey).(string)
+
+	userUUID := ""
+	if r.Context().Value(auth.UUIDContextKey) != nil {
+		userUUID = r.Context().Value(auth.UUIDContextKey).(string)
+	}
+
 	if userUUID == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte("unauthorized"))

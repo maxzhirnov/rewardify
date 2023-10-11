@@ -36,7 +36,7 @@ type authService interface {
 }
 
 type accrualService interface {
-	MonitorAndUpdateOrders(ctx context.Context)
+	MonitorAndUpdateOrders(ctx context.Context, checkInterval time.Duration)
 }
 
 type App struct {
@@ -55,8 +55,8 @@ func NewApp(auth authService, accrual accrualService, repo repo, l *logger.Logge
 	}
 }
 
-func (app *App) StartAccrualUpdater(ctx context.Context) {
-	app.accrualService.MonitorAndUpdateOrders(ctx)
+func (app *App) StartAccrualUpdater(ctx context.Context, checkInterval time.Duration) {
+	app.accrualService.MonitorAndUpdateOrders(ctx, checkInterval)
 }
 
 func (app *App) Register(ctx context.Context, username, password string) error {

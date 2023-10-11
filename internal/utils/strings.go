@@ -7,6 +7,6 @@ import (
 // HidePassword принимает строку подключения к Postgres и возвращает
 // строку, в которой пароль скрыт.
 func HidePassword(connStr string) string {
-	re := regexp.MustCompile(`Password=([^\\s]+)`)
-	return re.ReplaceAllString(connStr, "Password=*******")
+	re := regexp.MustCompile(`assword='[^']+'`)
+	return re.ReplaceAllString(connStr, "assword=*******")
 }

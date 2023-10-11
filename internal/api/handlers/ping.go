@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/maxzhirnov/rewardify/internal/api/middlewares"
+	"github.com/maxzhirnov/rewardify/internal/auth"
 )
 
 type PingResponseData struct {
@@ -22,8 +22,8 @@ func (h Handlers) HandlePing(w http.ResponseWriter, r *http.Request) {
 	response := PingResponseData{}
 	w.Header().Set("Content-Type", "application/json")
 
-	username := r.Context().Value(middlewares.UsernameContextKey)
-	uuid := r.Context().Value(middlewares.UUIDContextKey)
+	username := r.Context().Value(auth.UsernameContextKey)
+	uuid := r.Context().Value(auth.UUIDContextKey)
 
 	if username != nil && uuid != nil {
 		response.Username = username.(string)

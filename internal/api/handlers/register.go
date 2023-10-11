@@ -9,10 +9,7 @@ import (
 	"time"
 
 	a "github.com/maxzhirnov/rewardify/internal/app"
-)
-
-const (
-	tokenCookieName = "token"
+	"github.com/maxzhirnov/rewardify/internal/auth"
 )
 
 type RegisterRequestData struct {
@@ -73,7 +70,7 @@ func (h Handlers) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:    tokenCookieName,
+		Name:    auth.JWTCookeName,
 		Value:   tokenString,
 		Expires: time.Now().Add(cookieExpirationTime),
 	})

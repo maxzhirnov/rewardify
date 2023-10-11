@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/maxzhirnov/rewardify/internal/api/middlewares"
+	"github.com/maxzhirnov/rewardify/internal/auth"
+	"github.com/maxzhirnov/rewardify/internal/models"
 )
 
 type GetOrdersResponseData struct {
@@ -14,10 +15,10 @@ type GetOrdersResponseData struct {
 }
 
 type OrderDTO struct {
-	OrderNumber string  `json:"number"`
-	Status      string  `json:"status"`
-	Accrual     float32 `json:"accrual"`
-	UploadedAt  string  `json:"uploaded_at"`
+	OrderNumber string                    `json:"number"`
+	Status      models.BonusAccrualStatus `json:"status"`
+	Accrual     float32                   `json:"accrual"`
+	UploadedAt  string                    `json:"uploaded_at"`
 }
 
 func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
@@ -27,11 +28,14 @@ func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	userUUID := r.Context().Value(middlewares.UUIDContextKey).(string)
-	if userUUID == "" {
+	userUUID := ""
+	if r.Context().Value(auth.UUIDContextKey) != nil {
+		userUUID = r.Context().Value(auth.UUIDContextKey).(string)
+	}
 
+	if userUUID == "" {
 		response := map[string]string{"message": "unauthorized"}
-		JSONResponse(w, http.StatusInternalServerError, response)
+		JSONResponse(w, http.StatusUnauthorized, response)
 		return
 	}
 
@@ -55,7 +59,7 @@ func (h Handlers) HandleGetOrders(w http.ResponseWriter, r *http.Request) {
 	for i, o := range orders {
 		response[i] = OrderDTO{
 			OrderNumber: o.OrderNumber,
-			Status:      string(o.BonusAccrualStatus),
+			Status:      o.BonusAccrualStatus,
 			Accrual:     o.BonusesAccrued,
 			UploadedAt:  o.CreatedAt.Format(time.RFC3339),
 		}

@@ -6,7 +6,7 @@ import (
 	"github.com/maxzhirnov/rewardify/internal/models"
 )
 
-func (p *Postgres) UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order, newStatus string) error {
+func (p *Postgres) UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order) error {
 	tx, err := p.DB.Begin()
 	if err != nil {
 		return err
@@ -18,7 +18,7 @@ UPDATE orders
 SET bonus_accrual_status=$1
 WHERE order_number=$2
 `
-	_, err = tx.ExecContext(ctx, sqlUpdateOrder, newStatus, order.OrderNumber)
+	_, err = tx.ExecContext(ctx, sqlUpdateOrder, order.BonusAccrualStatus, order.OrderNumber)
 	if err != nil {
 		return err
 	}

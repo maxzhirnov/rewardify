@@ -56,7 +56,7 @@ func (api *Server) Start(addr string) error {
 			r.Get("/orders", api.handlers.HandleGetOrders)
 			r.Get("/balance", api.handlers.HandleGetBalance)
 			r.Post("/balance/withdraw", api.handlers.HandleWithdraw)
-			r.Get("/withdrawals", api.handlers.HandleListAllWithdrawals)
+			r.Get("/withdrawals", api.handlers.HandleGetWithdrawals)
 		})
 	})
 

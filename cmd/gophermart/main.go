@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/maxzhirnov/rewardify/internal/accrual"
 	"github.com/maxzhirnov/rewardify/internal/api"
@@ -49,10 +50,11 @@ func main() {
 
 	httpClient := &http.Client{}
 	accrualAPIWrapper := accrual.NewAPIWrapper(cfg.AccrualSystemAddress(), httpClient, logger)
-	accrualService := accrual.NewService(repository, accrualAPIWrapper, logger)
+	orderProcessor := accrual.NewOrderProcessor(repository, accrualAPIWrapper, logger)
+	accrualService := accrual.NewService(repository, orderProcessor, logger)
 	appInstance := app.NewApp(authService, accrualService, repository, logger)
 
-	go appInstance.StartAccrualUpdater(ctx)
+	go appInstance.StartAccrualUpdater(ctx, 10*time.Second)
 	go appInstance.WaitForShutdown(ctx)
 
 	// Создаем Server со всеми его зависимостями

@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/maxzhirnov/rewardify/internal/api/middlewares"
 	app2 "github.com/maxzhirnov/rewardify/internal/app"
+	"github.com/maxzhirnov/rewardify/internal/auth"
 )
 
 func (h Handlers) HandleUploadOrder(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +16,10 @@ func (h Handlers) HandleUploadOrder(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	userUUID := r.Context().Value(middlewares.UUIDContextKey).(string)
+	userUUID := ""
+	if r.Context().Value(auth.UUIDContextKey) != nil {
+		userUUID = r.Context().Value(auth.UUIDContextKey).(string)
+	}
 
 	if userUUID == "" {
 		response := map[string]string{"message": "unauthorized"}

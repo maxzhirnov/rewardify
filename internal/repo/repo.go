@@ -24,7 +24,7 @@ type store interface {
 	GetUsersOrders(ctx context.Context, userUUID string) ([]models.Order, error)
 	GetUsersBalance(ctx context.Context, userUUID string) (models.UsersBalance, error)
 	GetAllUnprocessedOrders(ctx context.Context) ([]models.Order, error)
-	UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order, newStatus string) error
+	UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order) error
 	GetUsersWithdrawals(ctx context.Context, usrUUID string) ([]models.Withdrawal, error)
 }
 
@@ -90,6 +90,6 @@ func (r *Repo) Ping(ctx context.Context) error {
 func (r *Repo) GetAllUnprocessedOrders(ctx context.Context) ([]models.Order, error) {
 	return r.store.GetAllUnprocessedOrders(ctx)
 }
-func (r *Repo) UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order, newStatus string) error {
-	return r.store.UpdateOrderAndCreateAccrual(ctx, order, newStatus)
+func (r *Repo) UpdateOrderAndCreateAccrual(ctx context.Context, order models.Order) error {
+	return r.store.UpdateOrderAndCreateAccrual(ctx, order)
 }

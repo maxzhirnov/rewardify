@@ -1,7 +1,7 @@
 .PHONY: test coverage
 
 test:
-	@go test ./...
+	@go test ./... -count=1
 
 coverage:
 	@go test -coverprofile=coverage.out ./...
