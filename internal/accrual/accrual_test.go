@@ -26,11 +26,11 @@ func (m *MockRepo) UpdateOrderAndCreateAccrual(ctx context.Context, order models
 	return args.Error(0)
 }
 
-type MockApi struct {
+type MockAPI struct {
 	mock.Mock
 }
 
-func (m *MockApi) Fetch(ctx context.Context, orderID string) (*APIResponse, error) {
+func (m *MockAPI) Fetch(ctx context.Context, orderID string) (*APIResponse, error) {
 	args := m.Called(ctx, orderID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -51,7 +51,7 @@ func (m *MockOrderProcessor) processOrder(ctx context.Context, order models.Orde
 
 func TestService_processOrder(t *testing.T) {
 	repo := new(MockRepo)
-	api := new(MockApi)
+	api := new(MockAPI)
 	l, err := logger.NewLogger(logger.ErrorLevel, false)
 	if err != nil {
 		t.Fatal(err)
