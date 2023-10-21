@@ -32,5 +32,5 @@ func NewPostgres(conn string, l *logger.Logger) (*Postgres, error) {
 }
 
 func (p *Postgres) Close() error {
-	return p.Close()
+	return p.db.Close()
 }

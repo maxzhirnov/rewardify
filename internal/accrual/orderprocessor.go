@@ -56,6 +56,4 @@ func (p *OrderProcessor) processOrder(ctx context.Context, order models.Order) {
 	if err != nil {
 		p.logger.Log.Error("Error updating response:", err)
 	}
-	return
-
 }
