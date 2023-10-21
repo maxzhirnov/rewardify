@@ -1,9 +1,9 @@
-package store
+package repo
 
 import (
 	"context"
 )
 
 func (p *Postgres) Ping(ctx context.Context) error {
-	return p.DB.PingContext(ctx)
+	return p.db.PingContext(ctx)
 }

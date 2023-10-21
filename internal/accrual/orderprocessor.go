@@ -3,13 +3,10 @@ package accrual
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/maxzhirnov/rewardify/internal/logger"
 	"github.com/maxzhirnov/rewardify/internal/models"
 )
-
-const resubmitRequestForStatusUpdate = 2 * time.Second
 
 type OrderProcessor struct {
 	repo       repo
@@ -27,42 +24,38 @@ func NewOrderProcessor(repo repo, apiWrapper api, l *logger.Logger) *OrderProces
 
 func (p *OrderProcessor) processOrder(ctx context.Context, order models.Order) {
 	p.logger.Log.Debug("Starting to process order: ", order.OrderNumber)
-	for {
-		response, err := p.apiWrapper.Fetch(ctx, order.OrderNumber)
-		if errors.Is(err, errTooManyRequests) {
-			p.logger.Log.Error(err)
-			time.Sleep(resubmitRequestForStatusUpdate)
-			continue
-		} else if errors.Is(err, errNotRegistered) {
-			p.logger.Log.Error(err)
-			order.BonusAccrualStatus = models.BonusAccrualStatusInvalid
-			err := p.repo.UpdateOrderAndCreateAccrual(ctx, order)
-			if err != nil {
-				p.logger.Log.Error("Error updating response:", err)
-			}
-			return
-		} else if errors.Is(err, errBadRequest) {
-			p.logger.Log.Error(err)
-			return
-		} else if err != nil {
-			p.logger.Log.Error("Error fetching response:", err)
-			return
-		}
+	response, err := p.apiWrapper.Fetch(ctx, order.OrderNumber)
 
-		if response.Status == "PROCESSED" || response.Status == "INVALID" {
-			switch response.Status {
-			case "PROCESSED":
-				order.BonusAccrualStatus = models.BonusAccrualStatusProcessed
-			case "INVALID":
-				order.BonusAccrualStatus = models.BonusAccrualStatusInvalid
-			}
-			order.BonusesAccrued = response.Accrual
-			p.logger.Log.Debugln("processOrder sending order to update", order)
-			err := p.repo.UpdateOrderAndCreateAccrual(ctx, order)
-			if err != nil {
-				p.logger.Log.Error("Error updating response:", err)
-			}
-			return
+	if errors.Is(err, errNotRegistered) {
+		p.logger.Log.Error(err)
+		order.BonusAccrualStatus = models.BonusAccrualStatusInvalid
+		err := p.repo.UpdateOrderAndCreateAccrual(ctx, order)
+		if err != nil {
+			p.logger.Log.Error("Error updating response:", err)
 		}
+		return
 	}
+
+	if err != nil {
+		p.logger.Log.Errorf("Error fetching response: %s", err)
+		return
+	}
+
+	if response.Status != models.BonusAccrualStatusProcessed.String() && response.Status != models.BonusAccrualStatusInvalid.String() {
+		p.logger.Log.Info("Accrual status not final")
+		return
+	}
+
+	order.BonusAccrualStatus = models.BonusAccrualStatusInvalid
+	if response.Status == models.BonusAccrualStatusProcessed.String() {
+		order.BonusAccrualStatus = models.BonusAccrualStatusProcessed
+		order.BonusesAccrued = response.Accrual
+	}
+	p.logger.Log.Debugln("processOrder sending order to update", order)
+	err = p.repo.UpdateOrderAndCreateAccrual(ctx, order)
+	if err != nil {
+		p.logger.Log.Error("Error updating response:", err)
+	}
+	return
+
 }

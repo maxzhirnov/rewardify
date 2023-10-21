@@ -26,7 +26,7 @@ type repo interface {
 	GetUsersOrders(ctx context.Context, userUUID string) ([]models.Order, error)
 	GetUsersWithdrawals(ctx context.Context, usrUUID string) ([]models.Withdrawal, error)
 	GetUsersBalance(ctx context.Context, userUUID string) (models.UsersBalance, error)
-	Bootstrap(ctx context.Context) error
+	Bootstrap() error
 	Ping(ctx context.Context) error
 }
 
@@ -53,10 +53,6 @@ func NewApp(auth authService, accrual accrualService, repo repo, l *logger.Logge
 		repo:           repo,
 		logger:         l,
 	}
-}
-
-func (app *App) StartAccrualUpdater(ctx context.Context, checkInterval time.Duration) {
-	app.accrualService.MonitorAndUpdateOrders(ctx, checkInterval)
 }
 
 func (app *App) Register(ctx context.Context, username, password string) error {
@@ -112,7 +108,7 @@ func (app *App) GetAllWithdrawals(ctx context.Context, usrUUID string) ([]models
 }
 
 func (app *App) CreateWithdrawal(ctx context.Context, userUUID, orderNumber string, amount float32) error {
-	// check if vald luhn number
+	// check if valid luhn number
 	o := models.Order{OrderNumber: orderNumber}
 	if !o.IsValidOrderNumber() {
 		return ErrInvalidOrderNumber

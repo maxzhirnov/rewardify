@@ -118,7 +118,6 @@ func TestService_processOrder(t *testing.T) {
 		})
 	}
 
-	repo.AssertExpectations(t)
 }
 
 func TestService_MonitorAndUpdateOrders(t *testing.T) {

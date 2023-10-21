@@ -1,4 +1,4 @@
-package store
+package repo
 
 import (
 	"context"
@@ -13,7 +13,7 @@ FROM orders
 WHERE bonus_accrual_status NOT IN ('PROCESSED', 'INVALID')
 `
 
-	rows, err := p.DB.QueryContext(ctx, sql)
+	rows, err := p.db.QueryContext(ctx, sql)
 	if err != nil {
 		return nil, err
 	}

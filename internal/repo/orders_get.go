@@ -1,4 +1,4 @@
-package store
+package repo
 
 import (
 	"context"
@@ -21,7 +21,7 @@ WHERE orders.user_uuid=$1
 ORDER BY orders.created_at
 	`
 
-	rows, err := p.DB.QueryContext(ctx, sql, userUUID)
+	rows, err := p.db.QueryContext(ctx, sql, userUUID)
 	if err != nil {
 		return nil, err
 	}

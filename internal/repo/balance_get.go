@@ -1,4 +1,4 @@
-package store
+package repo
 
 import (
 	"context"
@@ -16,7 +16,7 @@ func (p *Postgres) GetUsersBalance(ctx context.Context, userUUID string) (models
 SELECT total_bonus, redeemed_bonus, (total_bonus - redeemed_bonus) as current from balances WHERE user_uuid=$1
 `
 
-	row := p.DB.QueryRowContext(ctx, sql, userUUID)
+	row := p.db.QueryRowContext(ctx, sql, userUUID)
 
 	err := row.Scan(&userBalance.Earned, &userBalance.Withdrawn, &userBalance.Current)
 	if err != nil {

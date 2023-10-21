@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/maxzhirnov/rewardify/internal/logger"
+	"github.com/maxzhirnov/rewardify/internal/models"
 )
 
 // API mock
@@ -46,7 +47,7 @@ func Test_ApiWrapper_Fetch(t *testing.T) {
 			},
 			expected: &APIResponse{
 				Order:   "123456",
-				Status:  "PROCESSED",
+				Status:  models.BonusAccrualStatusProcessed.String(),
 				Accrual: 732.3,
 			},
 			expectedErr: nil,

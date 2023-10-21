@@ -17,7 +17,6 @@ import (
 	"github.com/maxzhirnov/rewardify/internal/config"
 	l "github.com/maxzhirnov/rewardify/internal/logger"
 	"github.com/maxzhirnov/rewardify/internal/repo"
-	"github.com/maxzhirnov/rewardify/internal/store"
 )
 
 func main() {
@@ -29,32 +28,31 @@ func main() {
 		log.Fatal(err)
 	}
 	defer logger.Close() // Закрыть файл куда пишутся логи
-
 	// Config
 	cfg := config.NewFromFlagsOrEnv(logger)
 	logger.Log.Debug(cfg)
 
 	// Инициализируем все зависимости и создаем сервис
-	storage, err := store.NewPostgres(cfg.DatabaseURI(), logger)
+	storage, err := repo.NewPostgres(cfg.DatabaseURI(), logger)
+	if err != nil {
+		logger.Log.Fatal(err)
+	}
+	defer storage.Close()
+
+	err = storage.Bootstrap()
 	if err != nil {
 		logger.Log.Fatal(err)
 	}
 
-	repository := repo.NewRepo(storage, logger)
-	err = repository.Bootstrap(context.TODO())
-	if err != nil {
-		logger.Log.Fatal(err)
-	}
-
-	authService := auth.NewAuthService(repository, cfg.AuthSecretKey())
+	authService := auth.NewAuthService(storage, cfg.AuthSecretKey())
 
 	httpClient := &http.Client{}
 	accrualAPIWrapper := accrual.NewAPIWrapper(cfg.AccrualSystemAddress(), httpClient, logger)
-	orderProcessor := accrual.NewOrderProcessor(repository, accrualAPIWrapper, logger)
-	accrualService := accrual.NewService(repository, orderProcessor, logger)
-	appInstance := app.NewApp(authService, accrualService, repository, logger)
+	orderProcessor := accrual.NewOrderProcessor(storage, accrualAPIWrapper, logger)
+	accrualService := accrual.NewService(storage, orderProcessor, logger)
+	appInstance := app.NewApp(authService, accrualService, storage, logger)
 
-	go appInstance.StartAccrualUpdater(ctx, 10*time.Second)
+	go accrualService.MonitorAndUpdateOrders(ctx, 10*time.Second)
 	go appInstance.WaitForShutdown(ctx)
 
 	// Создаем Server со всеми его зависимостями

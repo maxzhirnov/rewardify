@@ -17,7 +17,7 @@ type LoginRequestData struct {
 
 func (h Handlers) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	h.logger.Log.Debug("handler HandleLogin starting handle request...")
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 	defer cancel()
 
 	if r.Body == nil {

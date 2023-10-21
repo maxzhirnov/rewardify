@@ -1,4 +1,4 @@
-package store
+package repo
 
 import (
 	"context"
@@ -12,7 +12,7 @@ func (p *Postgres) GetUserByUsername(ctx context.Context, username string) (mode
 
 	sql := `SELECT uuid, username, password, created_at FROM users WHERE username=$1`
 
-	row := p.DB.QueryRowContext(ctx, sql, username)
+	row := p.db.QueryRowContext(ctx, sql, username)
 
 	err := row.Scan(&user.UUID, &user.Username, &user.Password, &user.CreateAt)
 	if err != nil {

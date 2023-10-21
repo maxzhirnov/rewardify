@@ -7,6 +7,10 @@ import (
 
 type BonusAccrualStatus string
 
+func (s BonusAccrualStatus) String() string {
+	return string(s)
+}
+
 const (
 	BonusAccrualStatusNew        BonusAccrualStatus = "NEW"
 	BonusAccrualStatusProcessing BonusAccrualStatus = "PROCESSING"

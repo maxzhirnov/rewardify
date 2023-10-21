@@ -17,7 +17,7 @@ type WithdrawalDTO struct {
 
 func (h Handlers) HandleGetWithdrawals(w http.ResponseWriter, r *http.Request) {
 	h.logger.Log.Debug("handler HandleGetWithdrawals starting handle request...")
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 	defer cancel()
 	w.Header().Set("Content-Type", "application/json")
 

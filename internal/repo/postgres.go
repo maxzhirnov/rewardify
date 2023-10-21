@@ -1,4 +1,4 @@
-package store
+package repo
 
 import (
 	"database/sql"
@@ -15,7 +15,7 @@ var (
 )
 
 type Postgres struct {
-	DB     *sql.DB
+	db     *sql.DB
 	logger *logger.Logger
 }
 
@@ -26,7 +26,11 @@ func NewPostgres(conn string, l *logger.Logger) (*Postgres, error) {
 	}
 
 	return &Postgres{
-		DB:     db,
+		db:     db,
 		logger: l,
 	}, nil
+}
+
+func (p *Postgres) Close() error {
+	return p.Close()
 }

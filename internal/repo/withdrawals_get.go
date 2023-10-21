@@ -1,4 +1,4 @@
-package store
+package repo
 
 import (
 	"context"
@@ -12,7 +12,7 @@ SELECT order_number, withdrew, created_at FROM withdrawals
 WHERE user_uuid=$1
 ORDER BY created_at
 `
-	rows, err := p.DB.QueryContext(ctx, sql, usrUUID)
+	rows, err := p.db.QueryContext(ctx, sql, usrUUID)
 	if err != nil {
 		return nil, err
 	}

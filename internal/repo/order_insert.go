@@ -1,4 +1,4 @@
-package store
+package repo
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 // InsertNewOrder inserts new order into database if order with specified OrderNumber already exists it returns false and error
 func (p *Postgres) InsertNewOrder(ctx context.Context, order models.Order) (bool, string, error) {
 	var existingUUID string
-	err := p.DB.QueryRowContext(ctx, "SELECT user_uuid FROM orders WHERE order_number = $1", order.OrderNumber).Scan(&existingUUID)
+	err := p.db.QueryRowContext(ctx, "SELECT user_uuid FROM orders WHERE order_number = $1", order.OrderNumber).Scan(&existingUUID)
 	if errors.Is(err, sql.ErrNoRows) {
-		_, err := p.DB.ExecContext(ctx, "INSERT INTO orders (order_number, user_uuid, bonus_accrual_status, created_at) VALUES ($1, $2, $3, $4)",
+		_, err := p.db.ExecContext(ctx, "INSERT INTO orders (order_number, user_uuid, bonus_accrual_status, created_at) VALUES ($1, $2, $3, $4)",
 			order.OrderNumber, order.UserUUID, order.BonusAccrualStatus, order.CreatedAt)
 		if err != nil {
 			return false, "", err

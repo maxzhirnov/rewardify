@@ -1,4 +1,4 @@
-package store
+package repo
 
 import (
 	"context"
@@ -23,7 +23,7 @@ func TestPostgres_GetUserByUsername(t *testing.T) {
 	l, _ := logger.NewLogger(logger.DebugLevel, false)
 
 	p := &Postgres{
-		DB:     db,
+		db:     db,
 		logger: l,
 	}
 
@@ -63,7 +63,7 @@ func TestPostgres_GetUsersBalance(t *testing.T) {
 	l, _ := logger.NewLogger(logger.DebugLevel, false)
 
 	p := &Postgres{
-		DB:     db,
+		db:     db,
 		logger: l,
 	}
 
@@ -106,7 +106,7 @@ func TestPostgres_GetAllUnprocessedOrders(t *testing.T) {
 	l, _ := logger.NewLogger(logger.DebugLevel, false)
 
 	p := &Postgres{
-		DB:     db,
+		db:     db,
 		logger: l,
 	}
 
@@ -170,7 +170,7 @@ func TestPostgres_GetUsersOrders(t *testing.T) {
 	l, _ := logger.NewLogger(logger.DebugLevel, false)
 
 	p := &Postgres{
-		DB:     db,
+		db:     db,
 		logger: l,
 	}
 
@@ -245,7 +245,7 @@ func TestPostgres_GetUsersWithdrawals(t *testing.T) {
 	l, _ := logger.NewLogger(logger.DebugLevel, false)
 
 	p := &Postgres{
-		DB:     db,
+		db:     db,
 		logger: l,
 	}
 

@@ -19,7 +19,7 @@ type WithdrawRequestData struct {
 
 func (h Handlers) HandleWithdraw(w http.ResponseWriter, r *http.Request) {
 	h.logger.Log.Debug("handler HandleWithdraw starting handle request...")
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 	defer cancel()
 
 	userUUID := ""
