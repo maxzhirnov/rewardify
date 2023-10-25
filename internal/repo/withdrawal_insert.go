@@ -17,7 +17,7 @@ func (p *Postgres) InsertNewWithdrawal(ctx context.Context, withdrawal models.Wi
 
 	// Получаем текущий баланс пользователя
 	sqlGetUserBalance := `
-    SELECT total_bonus, redeemed_bonus, (total_bonus - redeemed_bonus) as current from balances WHERE user_uuid=$1
+    SELECT total_bonus, redeemed_bonus, (total_bonus - redeemed_bonus) as current from balances WHERE user_uuid=$1 FOR UPDATE
     `
 	row := tx.QueryRowContext(ctx, sqlGetUserBalance, withdrawal.UserUUID)
 	err = row.Scan(&uBalance.Earned, &uBalance.Withdrawn, &uBalance.Current)
@@ -52,7 +52,7 @@ func (p *Postgres) InsertNewWithdrawal(ctx context.Context, withdrawal models.Wi
 
 	// Проверка существования записи
 	var exists bool
-	checkExistence := `SELECT exists(SELECT 1 FROM balances WHERE user_uuid=$1)`
+	checkExistence := `SELECT exists(SELECT 1 FROM balances WHERE user_uuid=$1) FOR UPDATE`
 	err = tx.QueryRowContext(ctx, checkExistence, withdrawal.UserUUID).Scan(&exists)
 	if err != nil {
 		return err
