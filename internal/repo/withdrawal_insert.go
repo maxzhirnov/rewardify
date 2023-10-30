@@ -22,7 +22,7 @@ func (p *Postgres) InsertNewWithdrawal(ctx context.Context, withdrawal models.Wi
  WHERE user_uuid = $2
  RETURNING (total_bonus - redeemed_bonus)
  `
-	var newCurrentBalance int
+	var newCurrentBalance float32
 	err = tx.QueryRowContext(ctx, sqlUpdateBalance, withdrawal.Amount, withdrawal.UserUUID).Scan(&newCurrentBalance)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrInsufficientFunds
