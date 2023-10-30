@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/maxzhirnov/rewardify/internal/logger"
 	"github.com/maxzhirnov/rewardify/internal/models"
 )
@@ -46,14 +48,12 @@ func (s *Service) MonitorAndUpdateOrders(ctx context.Context, checkInterval time
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
+			ticker.Reset(checkInterval)
 			if err := s.processOrders(ctx); err != nil {
 				// Если есть ошибка, увеличиваем интервал тикера
 				s.logger.Log.Errorln("Error processing orders:", err)
 				newInterval := checkInterval + errorDelay
 				ticker.Reset(newInterval)
-			} else {
-				// В случае успеха, вернем интервал тикера к исходному значению
-				ticker.Reset(checkInterval)
 			}
 		}
 	}
@@ -66,27 +66,19 @@ func (s *Service) processOrders(ctx context.Context) error {
 		return err
 	}
 
-	errCh := make(chan error, len(orders))
+	g, ctx := errgroup.WithContext(ctx)
 
 	for _, order := range orders {
-		go func(ord models.Order) { // предположим, что Order — это тип вашего заказа
-			if err := s.orderProcessor.processOrder(ctx, ord); err != nil {
-				errCh <- err
-			} else {
-				errCh <- nil
-			}
-		}(order)
+		order := order
+		g.Go(func() error {
+			return s.orderProcessor.processOrder(ctx, order)
+		})
 	}
 
-	// Ждем завершения всех горутин и собираем ошибки
-	for i := 0; i < len(orders); i++ {
-		if err := <-errCh; err != nil {
-			s.logger.Log.Error("Error processing order:", err)
-			return err
-		}
+	if err := g.Wait(); err != nil {
+		s.logger.Log.Error("Error processing order:", err)
+		return err
 	}
-
-	close(errCh)
 
 	return nil
 }

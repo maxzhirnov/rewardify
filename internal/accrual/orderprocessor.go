@@ -43,7 +43,7 @@ func (p *OrderProcessor) processOrder(ctx context.Context, order models.Order) e
 
 	if err != nil {
 		p.logger.Log.Errorf("Error fetching response: %s", err)
-		return nil
+		return err
 	}
 
 	if response.Status != models.BonusAccrualStatusProcessed.String() && response.Status != models.BonusAccrualStatusInvalid.String() {
