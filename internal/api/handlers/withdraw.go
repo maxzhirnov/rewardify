@@ -42,6 +42,7 @@ func (h Handlers) HandleWithdraw(w http.ResponseWriter, r *http.Request) {
 	// Читаем тело запроса
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		h.logger.Log.Errorln(err)
 		response := map[string]string{"message": "wrong requestData format"}
 		JSONResponse(w, http.StatusBadRequest, response)
 		return
@@ -50,6 +51,7 @@ func (h Handlers) HandleWithdraw(w http.ResponseWriter, r *http.Request) {
 	// Парсим тело запроса в структуру
 	var requestData WithdrawRequestData
 	if err := json.Unmarshal(body, &requestData); err != nil {
+		h.logger.Log.Errorln(err)
 		response := map[string]string{"message": "wrong requestData format"}
 		JSONResponse(w, http.StatusBadRequest, response)
 		return
@@ -57,14 +59,17 @@ func (h Handlers) HandleWithdraw(w http.ResponseWriter, r *http.Request) {
 
 	err = h.app.CreateWithdrawal(ctx, userUUID, requestData.Order, requestData.Sum)
 	if errors.Is(err, app2.ErrInvalidOrderNumber) {
+		h.logger.Log.Errorln(err)
 		response := map[string]string{"message": "wrong order number"}
 		JSONResponse(w, http.StatusUnprocessableEntity, response)
 		return
 	} else if errors.Is(err, app2.ErrInsufficientFunds) {
+		h.logger.Log.Errorln(err)
 		response := map[string]string{"message": "insufficient bonus funds"}
 		JSONResponse(w, http.StatusPaymentRequired, response)
 		return
 	} else if err != nil {
+		h.logger.Log.Errorln(err)
 		response := map[string]string{"message": "something went wrong"}
 		JSONResponse(w, http.StatusInternalServerError, response)
 		return

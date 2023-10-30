@@ -2,6 +2,8 @@ package repo
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/maxzhirnov/rewardify/internal/models"
 )
@@ -22,6 +24,9 @@ func (p *Postgres) InsertNewWithdrawal(ctx context.Context, withdrawal models.Wi
  `
 	var newCurrentBalance int
 	err = tx.QueryRowContext(ctx, sqlUpdateBalance, withdrawal.Amount, withdrawal.UserUUID).Scan(&newCurrentBalance)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrInsufficientFunds
+	}
 	if err != nil {
 		return err
 	}
