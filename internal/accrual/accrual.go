@@ -22,7 +22,7 @@ type api interface {
 }
 
 type orderProcessor interface {
-	processOrder(ctx context.Context, order models.Order) error
+	processOrder(ctx context.Context, order models.Order) (int, error)
 }
 
 type Service struct {
@@ -49,21 +49,23 @@ func (s *Service) MonitorAndUpdateOrders(ctx context.Context, checkInterval time
 			return
 		case <-ticker.C:
 			ticker.Reset(checkInterval)
-			if err := s.processOrders(ctx); err != nil {
+			if retryAfter, err := s.processOrders(ctx); err != nil {
 				// Если есть ошибка, увеличиваем интервал тикера
 				s.logger.Log.Errorln("Error processing orders:", err)
-				newInterval := checkInterval + errorDelay
+				retryAfterDuration := time.Duration(retryAfter) * time.Second
+				newInterval := checkInterval + retryAfterDuration
 				ticker.Reset(newInterval)
 			}
 		}
 	}
 }
 
-func (s *Service) processOrders(ctx context.Context) error {
+func (s *Service) processOrders(ctx context.Context) (int, error) {
+	retryAfter := retryAfterDefault
 	orders, err := s.repo.GetAllUnprocessedOrders(ctx)
 	if err != nil {
 		s.logger.Log.Error("Error fetching orders:", err)
-		return err
+		return retryAfter, err
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
@@ -71,14 +73,15 @@ func (s *Service) processOrders(ctx context.Context) error {
 	for _, order := range orders {
 		order := order
 		g.Go(func() error {
-			return s.orderProcessor.processOrder(ctx, order)
+			retryAfter, err = s.orderProcessor.processOrder(ctx, order)
+			return err
 		})
 	}
 
 	if err := g.Wait(); err != nil {
 		s.logger.Log.Error("Error processing order:", err)
-		return err
+		return retryAfter, err
 	}
 
-	return nil
+	return retryAfter, nil
 }

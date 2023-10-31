@@ -44,10 +44,10 @@ type MockOrderProcessor struct {
 	calledTimes int
 }
 
-func (m *MockOrderProcessor) processOrder(ctx context.Context, order models.Order) error {
+func (m *MockOrderProcessor) processOrder(ctx context.Context, order models.Order) (int, error) {
 	m.called = true
 	m.calledTimes++
-	return nil
+	return 0, nil
 }
 
 func TestService_processOrder(t *testing.T) {

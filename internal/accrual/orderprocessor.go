@@ -22,13 +22,17 @@ func NewOrderProcessor(repo repo, apiWrapper api, l *logger.Logger) *OrderProces
 	}
 }
 
-func (p *OrderProcessor) processOrder(ctx context.Context, order models.Order) error {
+func (p *OrderProcessor) processOrder(ctx context.Context, order models.Order) (int, error) {
 	p.logger.Log.Debug("Starting to process order: ", order.OrderNumber)
 	response, err := p.apiWrapper.Fetch(ctx, order.OrderNumber)
+	retryAfter := 0
+	if response != nil {
+		retryAfter = response.RetryAfter
+	}
 
 	if errors.Is(err, errTooManyRequests) {
 		p.logger.Log.Error(err)
-		return err
+		return retryAfter, err
 	}
 
 	if errors.Is(err, errNotRegistered) {
@@ -38,17 +42,17 @@ func (p *OrderProcessor) processOrder(ctx context.Context, order models.Order) e
 		if err != nil {
 			p.logger.Log.Error("Error updating response:", err)
 		}
-		return nil
+		return retryAfter, nil
 	}
 
 	if err != nil {
 		p.logger.Log.Errorf("Error fetching response: %s", err)
-		return err
+		return retryAfter, err
 	}
 
 	if response.Status != models.BonusAccrualStatusProcessed.String() && response.Status != models.BonusAccrualStatusInvalid.String() {
 		p.logger.Log.Info("Accrual status not final")
-		return nil
+		return retryAfter, nil
 	}
 
 	order.BonusAccrualStatus = models.BonusAccrualStatusInvalid
@@ -61,5 +65,5 @@ func (p *OrderProcessor) processOrder(ctx context.Context, order models.Order) e
 	if err != nil {
 		p.logger.Log.Error("Error updating response:", err)
 	}
-	return nil
+	return retryAfter, nil
 }

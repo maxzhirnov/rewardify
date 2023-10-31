@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/maxzhirnov/rewardify/internal/logger"
@@ -19,10 +20,13 @@ var (
 	errNotRegistered   = errors.New("order hasn't been registered in system")
 )
 
+const retryAfterDefault = 30
+
 type APIResponse struct {
-	Order   string  `json:"order"`
-	Status  string  `json:"status"`
-	Accrual float32 `json:"accrual"`
+	Order      string  `json:"order"`
+	Status     string  `json:"status"`
+	Accrual    float32 `json:"accrual"`
+	RetryAfter int
 }
 
 type APIWrapper struct {
@@ -66,7 +70,15 @@ func (a APIWrapper) Fetch(ctx context.Context, orderNumber string) (*APIResponse
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 429 {
-		return nil, errTooManyRequests
+		retryAfterStr := resp.Header.Get("Retry-After")
+		retryAfterInt, err := strconv.Atoi(retryAfterStr)
+		if err != nil {
+			a.logger.Log.Errorln(err)
+			retryAfterInt = retryAfterDefault
+		}
+		return &APIResponse{
+			RetryAfter: retryAfterInt,
+		}, errTooManyRequests
 	}
 
 	if resp.StatusCode == 204 {
@@ -86,7 +98,7 @@ func (a APIWrapper) Fetch(ctx context.Context, orderNumber string) (*APIResponse
 	if err != nil {
 		return nil, err
 	}
-	a.logger.Log.Debug("apiwrapper reurning response: ", response)
+	a.logger.Log.Debug("apiwrapper returning response: ", response)
 
 	return response, nil
 }

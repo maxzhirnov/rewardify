@@ -67,7 +67,7 @@ func Test_ApiWrapper_Fetch(t *testing.T) {
 			serverResponse: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusTooManyRequests)
 			},
-			expected:    nil,
+			expected:    &APIResponse{Order: "", Status: "", Accrual: 0, RetryAfter: 30},
 			expectedErr: errTooManyRequests,
 		},
 		{
