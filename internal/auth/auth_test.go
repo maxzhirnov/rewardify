@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -53,20 +54,16 @@ func TestAuthService_Register(t *testing.T) {
 }
 
 func TestAuthService_Authenticate(t *testing.T) {
-	// Create a mock repo
 	repo := new(MockRepo)
 
-	// Create an instance of AuthService with the mock repo
 	authService := NewAuthService(repo, "secret")
 
-	// Mock user data for testing
 	user := models.User{
 		UUID:     "12345",
 		Username: "testUser",
 		Password: "$2y$10$FqkJ.hLVquuLIHX3quXjq.ikD7zQdfVGoHEUmiWy64v2Fv7Pr0V9.", // Hashed "password"
 	}
 
-	// Test cases using table-driven testing
 	testCases := []struct {
 		username    string
 		password    string
@@ -105,4 +102,23 @@ func TestAuthService_Authenticate(t *testing.T) {
 			assert.Equal(t, testCase.expectedErr, err)
 		})
 	}
+}
+
+func TestAuthService_ValidateToken(t *testing.T) {
+	repo := new(MockRepo)
+	authService := NewAuthService(repo, "secret")
+	mockToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvaG4gRG9lIiwidXVpZCI6IjEyMzQ1NiJ9.yt5p3if6g9R1oOwVHWpCSWD46UcxTFPx7WwwFjGPpkg"
+	mockUser := &models.User{
+		UUID:     "123456",
+		Username: "John Doe",
+		Password: "",
+		CreateAt: time.Time{},
+	}
+	user, err := authService.ValidateToken(mockToken)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, mockUser.Username, user.Username)
+	assert.Equal(t, mockUser.UUID, user.UUID)
+
 }
