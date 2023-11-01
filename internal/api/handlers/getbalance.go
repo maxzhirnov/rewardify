@@ -1,0 +1,56 @@
+package handlers
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"time"
+
+	"github.com/maxzhirnov/rewardify/internal/auth"
+)
+
+type GetBalanceResponseData struct {
+	Current   float32 `json:"current"`
+	Withdrawn float32 `json:"withdrawn"`
+}
+
+func (h Handlers) HandleGetBalance(w http.ResponseWriter, r *http.Request) {
+	h.logger.Log.Debug("handler HandleGetBalance starting handle request...")
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+	defer cancel()
+
+	w.Header().Set("Content-Type", "application/json")
+
+	userUUID := ""
+	if r.Context().Value(auth.UUIDContextKey) != nil {
+		userUUID = r.Context().Value(auth.UUIDContextKey).(string)
+	}
+
+	if userUUID == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("unauthorized"))
+		return
+	}
+
+	balance, err := h.app.GetBalance(ctx, userUUID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("something went wrong"))
+		return
+	}
+
+	response := GetBalanceResponseData{
+		Current:   balance.Current,
+		Withdrawn: balance.Withdrawn,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("something went wrong"))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResponse)
+}

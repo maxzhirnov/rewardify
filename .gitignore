@@ -1,6 +1,10 @@
+# Custom
 DS_Store
 logs.txt
 test.http
+.env
+coverage.out
+profile.cov
 
 # Binaries for programs and plugins
 *.exe
