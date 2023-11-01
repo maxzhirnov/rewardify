@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -111,8 +110,6 @@ func TestAuthService_ValidateToken(t *testing.T) {
 	mockUser := &models.User{
 		UUID:     "123456",
 		Username: "John Doe",
-		Password: "",
-		CreateAt: time.Time{},
 	}
 	user, err := authService.ValidateToken(mockToken)
 	if err != nil {
